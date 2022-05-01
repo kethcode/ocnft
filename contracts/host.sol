@@ -13,11 +13,6 @@ import "hardhat/console.sol";
 /// Enums and Structs
 /// ----------------------------------------------------------------------------
 
-struct RemoteNFT {
-  address remoteContractAddr;
-  uint256 remoteTokenId;
-}
-
 /// ----------------------------------------------------------------------------
 /// Errors
 /// ----------------------------------------------------------------------------
@@ -142,14 +137,18 @@ contract host is ERC721Enumerable, Ownable {
     if (_exists(_tokenId) == false) {
       revert BadTokenID();
     }
-    
+
     if (msg.sender != ownerOf(_tokenId)) revert NotNFTOwner();
 
     bytes32 featureSlot = keccak256(abi.encodePacked(_featureSlot));
     features[_tokenId][featureSlot] = "";
   }
 
-  function getFeatureList(uint256 _tokenId) public view returns (string memory) {
+  function getFeatureList(uint256 _tokenId)
+    public
+    view
+    returns (string memory)
+  {
     if (_exists(_tokenId) == false) {
       revert BadTokenID();
     }

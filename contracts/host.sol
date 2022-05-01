@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 /// ----------------------------------------------------------------------------
 /// Enums and Structs
 /// ----------------------------------------------------------------------------
@@ -26,6 +26,7 @@ error BadTokenID();
 error SendFailed();
 error Soulbound();
 error InvalidAddress();
+error NotRemoteOwner();
 error NotNFTOwner();
 
 contract host is ERC721Enumerable, Ownable {
@@ -47,8 +48,8 @@ contract host is ERC721Enumerable, Ownable {
   bytes32 internal constant BODY_SLOT = keccak256("BODY_SLOT");
   bytes32 internal constant BADGE_SLOT = keccak256("BADGE_SLOT");
 
-  //      tokenId =>         featureSlot => RemoteNFT
-  mapping(uint256 => mapping(bytes32 => RemoteNFT)) public features;
+  //      tokenId =>         featureSlot => imageURI
+  mapping(uint256 => mapping(bytes32 => string)) public features;
 
   /// ------------------------------------------------------------------------
   /// Modifiers
@@ -104,32 +105,48 @@ contract host is ERC721Enumerable, Ownable {
   function register(
     uint256 _tokenId,
     string calldata _featureSlot,
-    address _remoteContractAddr,
-    uint256 _remoteTokenId
+    address remoteContractAddr,
+    uint256 remoteTokenId
   ) public {
     if (msg.sender != ownerOf(_tokenId)) revert NotNFTOwner();
-    if (_remoteContractAddr == address(0)) revert InvalidAddress();
+    if (remoteContractAddr == address(0)) revert InvalidAddress();
+    // reentrancy guard
 
     bytes32 featureSlot = keccak256(abi.encodePacked(_featureSlot));
 
-    if (
-      features[_tokenId][featureSlot].remoteContractAddr != _remoteContractAddr
-    ) {
-      features[_tokenId][featureSlot].remoteContractAddr = _remoteContractAddr;
+    // check if msg.sender if owner of remote token
+    // address remoteContractAddr = features[_tokenId][_featureSlot].remoteContractAddr;
+    // uint256 remoteTokenId = features[_tokenId][_featureSlot].remoteTokenId;
+
+    (bool success, bytes memory data) = remoteContractAddr.call(
+      abi.encodeWithSignature("ownerOf(uint256)", remoteTokenId)
+    );
+
+    if (success) {
+      if (abi.decode(data, (address)) != msg.sender) revert NotRemoteOwner();
     }
-    features[_tokenId][featureSlot].remoteTokenId = _remoteTokenId;
+
+    (success, data) = remoteContractAddr.call(
+      abi.encodeWithSignature("getImageURI(uint256)", remoteTokenId)
+    );
+
+    if (success) {
+      features[_tokenId][featureSlot] = abi.decode(data, (string));
+    }
   }
 
   function deregister(uint256 _tokenId, string calldata _featureSlot) public {
+    if (_exists(_tokenId) == false) {
+      revert BadTokenID();
+    }
+    
     if (msg.sender != ownerOf(_tokenId)) revert NotNFTOwner();
 
     bytes32 featureSlot = keccak256(abi.encodePacked(_featureSlot));
-
-    features[_tokenId][featureSlot].remoteContractAddr = address(0);
-    features[_tokenId][featureSlot].remoteTokenId = 0;
+    features[_tokenId][featureSlot] = "";
   }
 
-  function getFeatureList(uint256 _tokenId) public returns (string memory) {
+  function getFeatureList(uint256 _tokenId) public view returns (string memory) {
     if (_exists(_tokenId) == false) {
       revert BadTokenID();
     }
@@ -137,13 +154,13 @@ contract host is ERC721Enumerable, Ownable {
     string memory featureList = string(
       abi.encodePacked(
         '{"HEAD_SLOT":"',
-        getImageURI(_tokenId, HEAD_SLOT),
+        getImageURI(_tokenId, "HEAD_SLOT"),
         '","HAND_SLOT":"',
-        getImageURI(_tokenId, HAND_SLOT),
+        getImageURI(_tokenId, "HAND_SLOT"),
         '","BODY_SLOT":"',
-        getImageURI(_tokenId, BODY_SLOT),
+        getImageURI(_tokenId, "BODY_SLOT"),
         '","BADGE_SLOT":"',
-        getImageURI(_tokenId, BADGE_SLOT),
+        getImageURI(_tokenId, "BADGE_SLOT"),
         '"}'
       )
     );
@@ -151,19 +168,17 @@ contract host is ERC721Enumerable, Ownable {
     return featureList;
   }
 
-  function getImageURI(uint256 _tokenId, bytes32 _featureSlot)
+  function getImageURI(uint256 _tokenId, string memory _featureSlot)
     public
+    view
     returns (string memory)
   {
-    address remoteContractAddr = features[_tokenId][_featureSlot]
-      .remoteContractAddr;
-    uint256 remoteTokenId = features[_tokenId][_featureSlot].remoteTokenId;
+    if (_exists(_tokenId) == false) {
+      revert BadTokenID();
+    }
 
-    (bool success, bytes memory data) = remoteContractAddr.call(
-      abi.encodeWithSignature("getImageURI(uint256)", remoteTokenId)
-    );
-
-    return success ? abi.decode(data, (string)) : "";
+    bytes32 featureSlot = keccak256(abi.encodePacked(_featureSlot));
+    return features[_tokenId][featureSlot];
   }
 
   function mint(address to) public onlyOwner {

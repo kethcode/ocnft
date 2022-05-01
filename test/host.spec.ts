@@ -18,12 +18,8 @@ describe("Host", () => {
   });
 
   let Host: Contract;
-  let Remote: Contract;
   beforeEach(async () => {
     Host = await HostFactory.deploy();
-
-    Remote = await RemoteFactory.deploy();
-    Remote.mint(await signers[0].getAddress());
   });
 
   describe("construction", () => {
@@ -65,7 +61,7 @@ describe("Host", () => {
 
     describe("when called by non-owner", () => {
       it("should revert with 'Ownable: caller is not the owner'", async () => {
-        expect(
+        await expect(
           Host.connect(signers[1]).mint(await signers[0].getAddress())
         ).to.be.revertedWith("Ownable: caller is not the owner");
       });
@@ -76,7 +72,7 @@ describe("Host", () => {
     describe("transferFrom(from, to, tokenId)", () => {
       it("should revert with Soulbound()", async () => {
         Host.mint(await signers[0].getAddress());
-        expect(
+        await expect(
           Host.transferFrom(signers[0].getAddress(), signers[1].getAddress(), 0)
         ).to.be.revertedWith("Soulbound()");
       });
@@ -110,61 +106,152 @@ describe("Host", () => {
         await Host.setViewerURI("http://localhost:4201/");
         await Host.mint(await signers[0].getAddress());
 
-        await Host.register(
-          0,
-          "HEAD_SLOT",
-          "0x0000000000000000000000000000000000000007",
-          4
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
         );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
 
-        await Host.register(
-          0,
-          "HAND_SLOT",
-          "0x0000000000000000000000000000000000000008",
-          3
-        );
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 0);
 
         const featureSlot = ethers.utils.keccak256(
           ethers.utils.toUtf8Bytes("HEAD_SLOT")
         );
 
-        let [remoteContractAddr, remoteTokenId] = await Host.features(
-          0,
-          featureSlot
+        expect(await Host.features(0, featureSlot)).to.deep.equal(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/0.png"
         );
+      });
+    });
 
-        expect([remoteContractAddr, parseInt(remoteTokenId)]).to.deep.equal([
-          "0x0000000000000000000000000000000000000007",
-          4,
-        ]);
+    describe("when called with new remote data that msg.sender does not own", () => {
+      it("should revert", async () => {
+        await Host.setBaseURI("http://localhost:4200/");
+        await Host.setViewerURI("http://localhost:4201/");
+        await Host.mint(await signers[0].getAddress());
+
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
+        await remoteHead.mint(await signers[1].getAddress());
+
+        await expect(
+          Host.register(0, "HEAD_SLOT", remoteHead.address, 1)
+        ).to.be.revertedWith("NotRemoteOwner()");
       });
     });
 
     describe("when called with updated remote data", () => {
       it("should replace remote data", async () => {
-
         await Host.setBaseURI("http://localhost:4200/");
         await Host.setViewerURI("http://localhost:4201/");
         await Host.mint(await signers[0].getAddress());
 
-        await Host.register(0,'HEAD_SLOT','0x0000000000000000000000000000000000000007',4);
-        await Host.register(0,'HAND_SLOT','0x0000000000000000000000000000000000000008',3);
-        await Host.register(0,'HEAD_SLOT','0x0000000000000000000000000000000000000007',5);
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
+        await remoteHead.mint(await signers[0].getAddress());
+
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 0);
+
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 1);
 
         const featureSlot = ethers.utils.keccak256(
           ethers.utils.toUtf8Bytes("HEAD_SLOT")
         );
 
-        let [remoteContractAddr, remoteTokenId] = await Host.features(
-          0,
-          featureSlot
+        expect(await Host.features(0, featureSlot)).to.deep.equal(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/1.png"
+        );
+      });
+    });
+  });
+
+  //  function deregister(uint256 _tokenId, string calldata _featureSlot)
+  describe("deregister", () => {
+    describe("when called with valid _tokenId and _featureSlot", () => {
+      it("should blank existing data", async () => {
+        await Host.setBaseURI("http://localhost:4200/");
+        await Host.setViewerURI("http://localhost:4201/");
+        await Host.mint(await signers[0].getAddress());
+
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
+
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 0);
+
+        const featureSlot = ethers.utils.keccak256(
+          ethers.utils.toUtf8Bytes("HEAD_SLOT")
         );
 
-        expect([remoteContractAddr, parseInt(remoteTokenId)]).to.deep.equal([
-          "0x0000000000000000000000000000000000000007",
-          5,
-        ]);
+        let registeredImageURI = await Host.features(0, featureSlot);
 
+        await Host.deregister(0, "HEAD_SLOT");
+        let deregisteredImageURI = await Host.features(0, featureSlot);
+
+        expect(
+          registeredImageURI ==
+            "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/0.png" &&
+            deregisteredImageURI == ""
+        ).to.be.true;
+      });
+    });
+
+    describe("when called with invalid _tokenId", () => {
+      it("should revert", async () => {
+        await Host.setBaseURI("http://localhost:4200/");
+        await Host.setViewerURI("http://localhost:4201/");
+        await Host.mint(await signers[0].getAddress());
+
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
+
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 0);
+
+        await expect(Host.deregister(1, "HEAD_SLOT")).to.be.revertedWith(
+          "BadTokenID()"
+        );
+      });
+    });
+
+    describe("when called with new remote data that msg.sender does not own", () => {
+      it("should revert", async () => {
+        await Host.setBaseURI("http://localhost:4200/");
+        await Host.setViewerURI("http://localhost:4201/");
+        await Host.mint(await signers[1].getAddress());
+
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[1].getAddress());
+
+        await Host.connect(signers[1]).register(
+          0,
+          "HEAD_SLOT",
+          remoteHead.address,
+          0
+        );
+
+        await expect(Host.deregister(0, "HEAD_SLOT")).to.be.revertedWith(
+          "NotNFTOwner()"
+        );
       });
     });
   });
@@ -173,80 +260,113 @@ describe("Host", () => {
   describe("getImageURI", () => {
     describe("when called with valid _tokenId and _featureSlot", () => {
       it("should return remote imageURI string", async () => {
-
-        // setup remote
-        await Remote.setBaseURI(
-          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
-        );
-        await Remote.setViewerURI("http://localhost:4201/");
-        await Remote.mint(await signers[0].getAddress());
-
-        // setup host
         await Host.setBaseURI("http://localhost:4200/");
         await Host.setViewerURI("http://localhost:4201/");
         await Host.mint(await signers[0].getAddress());
 
-        await Host.register(0,'HEAD_SLOT',Remote.address,0);
-
-        
-
-        const featureSlot = ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes("HEAD_SLOT")
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
         );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
 
-        let imageURI = await Host.getImageURI(0,featureSlot);
-        console.log(imageURI);
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 0);
+
+        let imageURI = await Host.getImageURI(0, "HEAD_SLOT");
+        expect(imageURI).to.deep.equal(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/0.png"
+        );
+      });
+    });
+
+    describe("when called with valid _tokenId and invalid _featureSlot", () => {
+      it("should return empty string", async () => {
+        await Host.setBaseURI("http://localhost:4200/");
+        await Host.setViewerURI("http://localhost:4201/");
+        await Host.mint(await signers[0].getAddress());
+
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
+
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 0);
+
+        let imageURI = await Host.getImageURI(0, "HEART_SLOT");
+        expect(imageURI).to.deep.equal("");
+      });
+    });
+
+    describe("when called with invalid _tokenId", () => {
+      it("should revert", async () => {
+        await Host.setBaseURI("http://localhost:4200/");
+        await Host.setViewerURI("http://localhost:4201/");
+        await Host.mint(await signers[0].getAddress());
+
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
+
+        await expect(Host.getImageURI(1, "HEAD_SLOT")).to.be.revertedWith(
+          "BadTokenID()"
+        );
       });
     });
   });
 
-  //   function getFeatureList(uint256 _tokenId) public returns (string memory) {
+  //  function getFeatureList(uint256 _tokenId)
   describe("getFeatureList", () => {
     describe("when called with valid _tokenId", () => {
-      it("should return feature list json", async () => {
-
-        // setup remote
-        await Remote.setBaseURI(
-          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
-        );
-        await Remote.setViewerURI("http://localhost:4201/");
-        await Remote.mint(await signers[0].getAddress());
-
-        // setup host
+      it("should return json imageURI table", async () => {
+        // host
         await Host.setBaseURI("http://localhost:4200/");
         await Host.setViewerURI("http://localhost:4201/");
         await Host.mint(await signers[0].getAddress());
 
-        await Host.register(0,'HEAD_SLOT',Remote.address,0);
-        await Host.register(0,'HAND_SLOT',Remote.address,0);
-        await Host.register(0,'BODY_SLOT',Remote.address,0);
-        await Host.register(0,'BADGE_SLOT',Remote.address,0);
-        
+        // head
+        let remoteHead = await RemoteFactory.deploy();
+        await remoteHead.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
+        );
+        await remoteHead.setViewerURI("http://localhost:4201/");
+        await remoteHead.mint(await signers[0].getAddress());
+        await Host.register(0, "HEAD_SLOT", remoteHead.address, 0);
 
-        let featureList = await Host.getFeatureList(0);
-        console.log(featureList);
+        let remoteHand = await RemoteFactory.deploy();
+        await remoteHand.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmbBXqmhsa8LpXsy8VtyhkoHc6SaaTP9SWcQfuAKNTtoKm/"
+        );
+        await remoteHand.setViewerURI("http://localhost:4201/");
+        await remoteHand.mint(await signers[0].getAddress());
+        await Host.register(0, "HAND_SLOT", remoteHand.address, 0);
+
+        let remoteBody = await RemoteFactory.deploy();
+        await remoteBody.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/Qmbe7WL5AkmUD5AndRs1NTidDUFDCRLpjuahjuK1NCzXft/"
+        );
+        await remoteBody.setViewerURI("http://localhost:4201/");
+        await remoteBody.mint(await signers[0].getAddress());
+        await Host.register(0, "BODY_SLOT", remoteBody.address, 0);
+
+        let remoteBadge = await RemoteFactory.deploy();
+        await remoteBadge.setBaseURI(
+          "https://kethic.mypinata.cloud/ipfs/QmSMwDCNrhejJAZmvQ1FhtBR4NbwjgYSjCh1k7CTZyHkg3/"
+        );
+        await remoteBadge.setViewerURI("http://localhost:4201/");
+        await remoteBadge.mint(await signers[0].getAddress());
+        await Host.register(0, "BADGE_SLOT", remoteBadge.address, 0);
+
+        let imageURIjson = await Host.getFeatureList(0);
+        expect(imageURIjson).to.deep.equal(
+          '{"HEAD_SLOT":"https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/0.png","HAND_SLOT":"https://kethic.mypinata.cloud/ipfs/QmbBXqmhsa8LpXsy8VtyhkoHc6SaaTP9SWcQfuAKNTtoKm/0.png","BODY_SLOT":"https://kethic.mypinata.cloud/ipfs/Qmbe7WL5AkmUD5AndRs1NTidDUFDCRLpjuahjuK1NCzXft/0.png","BADGE_SLOT":"https://kethic.mypinata.cloud/ipfs/QmSMwDCNrhejJAZmvQ1FhtBR4NbwjgYSjCh1k7CTZyHkg3/0.png"}'
+        );
       });
     });
   });
-
-  // describe("getFeatureList", () => {
-  //   describe("when called with valid tokenId", () => {
-  //     it("should return a data array", async () => {
-
-  //       await Host.setBaseURI("http://localhost:4200/");
-  //       await Host.setViewerURI("http://localhost:4201/");
-  //       await Host.mint(await signers[0].getAddress());
-
-  //       await Host.register(0,'0x0000000000000000000000000000000000000007',4);
-  //       await Host.register(0,'0x0000000000000000000000000000000000000008',3);
-
-  //       // typescript gives us labeled objects in addition to the raw tuple
-  //       let remoteData = await Host.getFeatureList(0);
-  //       // tuple[] :  0x0000000000000000000000000000000000000007,4,0x0000000000000000000000000000000000000008,3
-  //       console.log(remoteData)
-  //       //expect([remoteContractAddr, parseInt(remoteTokenId)]).to.deep.equal(['0x0000000000000000000000000000000000000008',3])
-
-  //     });
-  //   });
-  // });
 });

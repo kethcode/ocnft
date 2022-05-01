@@ -108,6 +108,9 @@ contract host is ERC721Enumerable, Ownable {
     address remoteContractAddr,
     uint256 remoteTokenId
   ) public {
+    if (_exists(_tokenId) == false) {
+      revert BadTokenID();
+    }
     if (msg.sender != ownerOf(_tokenId)) revert NotNFTOwner();
     if (remoteContractAddr == address(0)) revert InvalidAddress();
     // reentrancy guard

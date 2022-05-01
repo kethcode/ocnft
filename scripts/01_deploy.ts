@@ -4,6 +4,11 @@ const fs = require("fs");
 const path_ipfshash_data = "./data/ipfs_cids.json";
 const path_contract_addresses = "./data/contract_addresses.json";
 
+const ipfs_gateway = "https://kethic.mypinata.cloud/ipfs/";
+const hostBaseURI = "https://localhost:4200/";
+const hostViewerURI = "https://localhost:4201/";
+
+
 async function main() {
 
   let IpfsHash = JSON.parse(
@@ -38,46 +43,57 @@ async function main() {
   await remoteBadge.deployed();
   console.log("remoteBadge deployed to:", remoteBadge.address);
 
-  const accounts = await ethers.getSigners();
+  let contractData = {
+    hostAddress: host.address,
+    remoteHeadAddress: remoteHead.address,
+    remoteHandAddress: remoteHand.address,
+    remoteBodyAddress: remoteBody.address,
+    remoteBadgeAddress: remoteBadge.address,
+  };
+  fs.writeFileSync(path_contract_addresses, JSON.stringify(contractData), {
+    flag: "w+",
+  });
 
+  const accounts = await ethers.getSigners();
   let tx: any;
 
-
-
-  tx = await remoteHead.setBaseURI("https://kethic.mypinata.cloud/ipfs/" + cid_head + "/");
+  tx = await remoteHead.setBaseURI(ipfs_gateway + cid_head + "/");
   await tx.wait();
-  console.log("remoteHead.setBaseURI:", "https://kethic.mypinata.cloud/ipfs/" + cid_head + "/");
+  console.log("remoteHead.setBaseURI:", ipfs_gateway + cid_head + "/");
   tx = await remoteHead.mint(accounts[0].address);
   await tx.wait();
   console.log("remoteHead.mint: 0");
 
-  tx = await remoteHand.setBaseURI("https://kethic.mypinata.cloud/ipfs/" + cid_hand + "/");
+  tx = await remoteHand.setBaseURI(ipfs_gateway + cid_hand + "/");
   await tx.wait();
-  console.log("remoteHand.setBaseURI:", "https://kethic.mypinata.cloud/ipfs/" + cid_hand + "/");
+  console.log("remoteHand.setBaseURI:", ipfs_gateway + cid_hand + "/");
   tx = await remoteHand.mint(accounts[0].address);
   await tx.wait();
   console.log("remoteHand.mint: 0");
 
-  tx = await remoteBody.setBaseURI("https://kethic.mypinata.cloud/ipfs/" + cid_body + "/");
+  tx = await remoteBody.setBaseURI(ipfs_gateway + cid_body + "/");
   await tx.wait();
-  console.log("remoteBody.setBaseURI:", "https://kethic.mypinata.cloud/ipfs/" + cid_body + "/");
+  console.log("remoteBody.setBaseURI:", ipfs_gateway + cid_body + "/");
   tx = await remoteBody.mint(accounts[0].address);
   await tx.wait();
   console.log("remoteBody.mint: 0");
 
-  tx = await remoteBadge.setBaseURI("https://kethic.mypinata.cloud/ipfs/" + cid_badge + "/");
+  tx = await remoteBadge.setBaseURI(ipfs_gateway + cid_badge + "/");
   await tx.wait();
-  console.log("remoteBadge.setBaseURI:", "https://kethic.mypinata.cloud/ipfs/" + cid_badge + "/");
+  console.log("remoteBadge.setBaseURI:", ipfs_gateway + cid_badge + "/");
   tx = await remoteBadge.mint(accounts[0].address);
   await tx.wait();
   console.log("remoteBadge.mint: 0");
 
-  tx = await host.setBaseURI("https://localhost:4200/");
+  tx = await host.setBaseURI(hostBaseURI);
   await tx.wait();
-  console.log("host.setBaseURI: https://localhost:4200/");
-  tx = await host.setViewerURI("https://localhost:4201/");
+  console.log("host.setBaseURI:", hostBaseURI);
+  tx = await host.setViewerURI(hostViewerURI);
   await tx.wait();
-  console.log("host.setViewerURI: https://localhost:4201/");
+  console.log("host.setViewerURI:",hostViewerURI);
+  tx = await host.mint(accounts[0].address);
+  await tx.wait();
+  console.log("host.mint: 0");
 
   tx = await host.register(0,'HEAD_SLOT',remoteHead.address,0);
   await tx.wait();
@@ -91,22 +107,7 @@ async function main() {
   tx = await host.register(0,'BADGE_SLOT',remoteBadge.address,0);
   await tx.wait();
   console.log("host.register: 0,'BADGE_SLOT',",remoteBadge.address);
-  
-  tx = await host.mint(accounts[0].address);
-  await tx.wait();
-  console.log("host.mint: 0");
 
-  let contractData = {
-    hostAddress: host.address,
-    remoteHeadAddress: remoteHead.address,
-    remoteHandAddress: remoteHand.address,
-    remoteBodyAddress: remoteBody.address,
-    remoteBadgeAddress: remoteBadge.address,
-  };
-
-  fs.writeFileSync(path_contract_addresses, JSON.stringify(contractData), {
-    flag: "w+",
-  });
 }
 
 main().catch((error) => {

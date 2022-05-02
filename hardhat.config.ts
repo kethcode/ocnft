@@ -13,7 +13,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.10",
+        version: "0.8.9",
         settings: {
           optimizer: {
             enabled: true,
@@ -27,8 +27,8 @@ const config: HardhatUserConfig = {
     rinkeby: {
       url: process.env.ALCHEMY_KEY_RINKEBY,
       accounts:
-        process.env.PRIVATE_KEY_KETHIC_ETH !== undefined
-          ? [process.env.PRIVATE_KEY_KETHIC_ETH]
+        process.env.PRIVATE_KEY_RINKEBY !== undefined
+          ? [process.env.PRIVATE_KEY_RINKEBY]
           : [],
     },
     // ropsten: {

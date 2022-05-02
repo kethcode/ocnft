@@ -93,7 +93,7 @@ describe("Host", () => {
         await Host.mint(await signers[0].getAddress());
         const metadata = await Host.tokenURI(0);
         expect(metadata).to.deep.equal(
-          "data:application/json;base64,eyJuYW1lIjoiaG9zdCIsImRlc2NyaXB0aW9uIjoib2NuZnQiLCJpbWFnZSI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDIwMC8wLnBuZyIsImV4dGVybmFsX3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDIwMS8wIn0="
+          "data:application/json;base64,eyJuYW1lIjoiaG9zdCIsImRlc2NyaXB0aW9uIjoib2NuZnQgaG9zdCIsImltYWdlIjoiaHR0cDovL2xvY2FsaG9zdDo0MjAwLzAucG5nIiwiZXh0ZXJuYWxfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDo0MjAxLzAifQ=="
         );
       });
     });

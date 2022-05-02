@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.9;
 
 /// ----------------------------------------------------------------------------
 /// Imports
@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 /// ----------------------------------------------------------------------------
 /// Enums and Structs
 /// ----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ contract host is ERC721Enumerable, Ownable {
   }
 
   function getMetadata(uint256 _tokenId) internal view returns (string memory) {
-    string memory nftJson = '{"name":"host","description":"ocnft","image":"';
+    string memory nftJson = '{"name":"host","description":"ocnft host","image":"';
     string memory tokenIdString = Strings.toString(_tokenId);
     nftJson = string(
       abi.encodePacked(

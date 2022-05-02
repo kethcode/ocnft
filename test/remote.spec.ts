@@ -82,7 +82,7 @@ describe("Remote", () => {
         await Remote.mint(await signers[0].getAddress());
         const metadata = await Remote.tokenURI(0);
         expect(metadata).to.deep.equal(
-          "data:application/json;base64,eyJuYW1lIjoiaG9zdCIsImRlc2NyaXB0aW9uIjoib2NuZnQiLCJpbWFnZSI6Imh0dHBzOi8va2V0aGljLm15cGluYXRhLmNsb3VkL2lwZnMvUW1lRG83a2RRZG9jOXYxdWNnTVBUckdHcVZGV2Ntdm5hV3JTN2E0eUo0ZW1hOC8wLnBuZyIsImV4dGVybmFsX3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDIwMS8wIn0="
+          "data:application/json;base64,eyJuYW1lIjoicmVtb3RlIiwiZGVzY3JpcHRpb24iOiJvY25mdCByZW1vdGUiLCJpbWFnZSI6Imh0dHBzOi8va2V0aGljLm15cGluYXRhLmNsb3VkL2lwZnMvUW1lRG83a2RRZG9jOXYxdWNnTVBUckdHcVZGV2Ntdm5hV3JTN2E0eUo0ZW1hOC8wLnBuZyIsImV4dGVybmFsX3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDIwMS8wIn0="
         );
       });
     });

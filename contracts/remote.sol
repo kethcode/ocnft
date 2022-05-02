@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.9;
 
 /// ----------------------------------------------------------------------------
 /// Imports
@@ -70,7 +70,7 @@ contract remote is ERC721Enumerable, Ownable {
   }
 
   function getMetadata(uint256 _tokenId) internal view returns (string memory) {
-    string memory nftJson = '{"name":"host","description":"ocnft","image":"';
+    string memory nftJson = '{"name":"remote","description":"ocnft remote","image":"';
     string memory tokenIdString = Strings.toString(_tokenId);
     nftJson = string(
       abi.encodePacked(

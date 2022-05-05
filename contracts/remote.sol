@@ -2,7 +2,18 @@
 pragma solidity ^0.8.9;
 
 /// ----------------------------------------------------------------------------
-/// Imports
+/// Overview
+/// ----------------------------------------------------------------------------
+
+// function mint(address to)   
+// function setBaseURI(string calldata _bURI)   
+// function setExternalURI(string calldata _eURI)   
+// function tokenURI(uint256 _tokenId) 
+// function withdraw()  
+// function withdrawToken()  
+
+/// ----------------------------------------------------------------------------
+/// Library Imports
 /// ----------------------------------------------------------------------------
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -11,74 +22,109 @@ import "@openzeppelin/contracts/interfaces/IERC20.sol";
 // import "hardhat/console.sol";
 
 /// ----------------------------------------------------------------------------
-/// Enums and Structs
-/// ----------------------------------------------------------------------------
-
-/// ----------------------------------------------------------------------------
 /// Errors
 /// ----------------------------------------------------------------------------
+error invalidTokenId();
+error withdrawFailed();
 
-error BadTokenID();
-error SendFailed();
-error Soulbound();
-error InvalidAddress();
-error NotNFTOwner();
+/**
+ * @title remote
+ * @dev redacted
+ */
 
 contract remote is ERC721Enumerable, Ownable {
-  using Strings for uint256;
+  /// ------------------------------------------------------------------------
+  /// External Contract References
+  /// ------------------------------------------------------------------------
+  using Strings for uint256; // inherited from ERC721Enumerable
 
   /// ------------------------------------------------------------------------
   /// Events
   /// ------------------------------------------------------------------------
+  event BaseURISet(string baseURI);
+  event ExternalURISet(string externalURI);
 
   /// ------------------------------------------------------------------------
   /// Variables
   /// ------------------------------------------------------------------------
+  string public constant nftName = "remote";
+  string public constant nftSymbol = "remote";
+  string public constant nftDescription = "ocnft remote";
 
   string public baseURI;
-  string public viewerURI;
+  string public externalURI;
 
   /// ------------------------------------------------------------------------
-  /// Modifiers
+  /// Constructor
   /// ------------------------------------------------------------------------
+  
+  /**
+  * @dev Empty Constructor, calls remote constructor with long name and symbol
+  */
+  constructor() ERC721(nftName, nftSymbol) {}
 
   /// ------------------------------------------------------------------------
-  /// Functions
+  /// Basic NFT Functionality
   /// ------------------------------------------------------------------------
 
-  constructor() ERC721("remote", "remote") {}
+  /**
+  * @param to Address to receive the NFT
+  */
+  function mint(address to) public onlyOwner {
+    _mint(to, totalSupply());
+  }
 
+  /**
+  * @param _bURI baseURI to be used to retreive image data
+  */
+  function setBaseURI(string calldata _bURI) public onlyOwner {
+    baseURI = _bURI;
+    emit BaseURISet(baseURI);
+  }
+
+  /**
+  * @param _eURI alternate externalURI base to be used to view the NFT
+  */
+  function setExternalURI(string calldata _eURI) public onlyOwner {
+    externalURI = _eURI;
+    emit ExternalURISet(externalURI);
+  }
+
+  /**
+  * @param _tokenId Token index of the json metadata to retrieve
+  */
   function tokenURI(uint256 _tokenId)
     public
     view
     override
     returns (string memory)
   {
-    if (_exists(_tokenId) == false) {
-      revert BadTokenID();
-    }
-
-    return bytes(_baseURI()).length > 0 ? getMetadata(_tokenId) : "";
+    if (_exists(_tokenId) == false) revert invalidTokenId();
+    return bytes(_baseURI()).length > 0 ? _getMetadata(_tokenId) : "";
   }
 
-  function setBaseURI(string memory _bURI) public onlyOwner {
-    baseURI = _bURI;
-  }
-
-  function setViewerURI(string memory _vURI) public onlyOwner {
-    viewerURI = _vURI;
-  }
-
-  function getMetadata(uint256 _tokenId) internal view returns (string memory) {
-    string memory nftJson = '{"name":"remote","description":"ocnft remote","image":"';
+  /**
+  * @param _tokenId Token index of the json metadata to generate
+  * @dev Returned data is base64 encoded
+  */
+  function _getMetadata(uint256 _tokenId)
+    internal
+    view
+    returns (string memory)
+  {
     string memory tokenIdString = Strings.toString(_tokenId);
-    nftJson = string(
+
+    string memory nftJson = string(
       abi.encodePacked(
-        nftJson,
+        '{"name":"',
+        nftName,
+        '","description":"',
+        nftDescription,
+        '","image":"',
         baseURI,
         tokenIdString,
         '.png","external_url":"',
-        viewerURI,
+        externalURI,
         tokenIdString,
         '"}'
       )
@@ -89,48 +135,37 @@ contract remote is ERC721Enumerable, Ownable {
       string(abi.encodePacked("data:application/json;base64,", nftEncoded));
   }
 
-  function getImageURI(uint256 _tokenId) public view returns (string memory) {
-    if (_exists(_tokenId) == false) {
-      revert BadTokenID();
-    }
-
-    string memory tokenIdString = Strings.toString(_tokenId);
-    return string(abi.encodePacked(baseURI, tokenIdString, ".png"));
-  }
-
-  function mint(address to) public onlyOwner {
-    _mint(to, totalSupply());
-  }
-
+  /**
+  * @dev used to retrieve all ETH from the contract. multisig friendly.
+  */
   function withdraw() public onlyOwner {
     (bool sent, ) = msg.sender.call{value: address(this).balance}("");
     if (!sent) {
-      revert SendFailed();
+      revert withdrawFailed();
     }
   }
 
+  /**
+  * @param _token ERC20 token to retrieve
+  * @dev used to retrieve all of an ERC20 token from the contract
+  */
   function withdrawTokens(IERC20 _token) public onlyOwner {
     bool sent = _token.transfer(msg.sender, _token.balanceOf(address(this)));
     if (!sent) {
-      revert SendFailed();
+      revert withdrawFailed();
     }
   }
 
+  /**
+  * @dev glue logic for ERC721Enumerable
+  */
   function _baseURI() internal view override returns (string memory) {
     return baseURI;
   }
-
-  /// ------------------------------------------------------------------------
-  /// ERC165
-  /// ------------------------------------------------------------------------
-
-  /// ------------------------------------------------------------------------
-  /// Utility
-  /// ------------------------------------------------------------------------
 }
 
 /// ----------------------------------------------------------------------------
-/// External Contracts
+/// Libraries
 /// ----------------------------------------------------------------------------
 
 // Primes NFT

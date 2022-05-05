@@ -1,8 +1,6 @@
 import { expect } from "./setup";
 import { Contract, ContractFactory, Signer } from "ethers";
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
-import { hostname } from "os";
 
 describe("Remote", () => {
   let signers: Signer[];
@@ -78,33 +76,11 @@ describe("Remote", () => {
         await Remote.setBaseURI(
           "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
         );
-        await Remote.setViewerURI("http://localhost:4201/");
+        await Remote.setExternalURI("http://localhost:4201/");
         await Remote.mint(await signers[0].getAddress());
         const metadata = await Remote.tokenURI(0);
         expect(metadata).to.deep.equal(
           "data:application/json;base64,eyJuYW1lIjoicmVtb3RlIiwiZGVzY3JpcHRpb24iOiJvY25mdCByZW1vdGUiLCJpbWFnZSI6Imh0dHBzOi8va2V0aGljLm15cGluYXRhLmNsb3VkL2lwZnMvUW1lRG83a2RRZG9jOXYxdWNnTVBUckdHcVZGV2Ntdm5hV3JTN2E0eUo0ZW1hOC8wLnBuZyIsImV4dGVybmFsX3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDIwMS8wIn0="
-        );
-      });
-    });
-  });
-
-  describe("getImageURI", () => {
-    describe("when called with invalid tokenId", () => {
-      it("should revert()", async () => {
-        await expect(Remote.getImageURI(0)).to.be.reverted;
-      });
-    });
-
-    describe("when called with valid tokenId", () => {
-      it("should return pure URI", async () => {
-        await Remote.setBaseURI(
-          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
-        );
-        await Remote.setViewerURI("http://localhost:4201/");
-        await Remote.mint(await signers[0].getAddress());
-        const metadata = await Remote.getImageURI(0);
-        expect(metadata).to.deep.equal(
-          "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/0.png"
         );
       });
     });

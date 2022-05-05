@@ -4,7 +4,6 @@ const hre = require("hardhat");
 const fs = require("fs");
 const path_contract_addresses = "./data/contract_addresses.json";
 
-
 async function main() {
 
   let contractData = JSON.parse(
@@ -15,10 +14,7 @@ async function main() {
   const Remote = await ethers.getContractFactory("remote");
 
   const host = Host.attach(contractData['hostAddress']);
-  const remoteHead = Host.attach(contractData['remoteHeadAddress']);
-  const remoteHand = Host.attach(contractData['remoteHandAddress']);
-  const remoteBody = Host.attach(contractData['remoteBodyAddress']);
-  const remoteBadge = Host.attach(contractData['remoteBadgeAddress']);
+  const remoteHead = Remote.attach(contractData['remoteHeadAddress']);
 
   await hre.run("verify:verify", {
     contract: "contracts/host.sol:host",
@@ -31,8 +27,6 @@ async function main() {
   });
 
   // duplicate bytecode doesn't need to be reverified
-
-
 }
 
 main().catch((error) => {

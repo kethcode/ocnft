@@ -12,8 +12,10 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-	"deploy_rinkeby": "hardhat run scripts/01_deploy.ts --network rinkeby",
-	"verify_rinkeby": "hardhat run scripts/02_verify.ts --network rinkeby"
+    "deploy_rinkeby": "hardhat run scripts/01_deploy.ts --network rinkeby",
+    "verify_rinkeby": "hardhat run scripts/02_verify.ts --network rinkeby",
+	"demo_setup_ipfs": "hardhat run scripts/10_demo_setup_ipfs_images.ts --network rinkeby",
+	"demo_setup_features": "hardhat run scripts/11_demo_setup_features.ts --network rinkeby"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
@@ -39,6 +41,7 @@
     "ethereum-waffle": "^3.0.0",
     "ethers": "^5.0.0",
     "hardhat": "^2.9.3",
+    "hardhat-contract-sizer": "^2.5.1",
     "hardhat-gas-reporter": "^1.0.4",
     "prettier": "^2.3.2",
     "prettier-plugin-solidity": "^1.0.0-beta.13",

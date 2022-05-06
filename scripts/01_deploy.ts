@@ -1,8 +1,15 @@
 import { ethers } from "hardhat";
 
 const fs = require("fs");
-const path_ipfshash_data = "./data/ipfs_cids.json";
-const path_contract_addresses = "./data/contract_addresses.json";
+const path = require("path");
+
+const path_contract_addresses = path.resolve(
+  __dirname,
+  `../data/contract_addresses.json`
+);
+
+const path_ipfshash_data = path.resolve(__dirname, `../data/ipfs_cids.json`);
+
 
 async function main() {
 
@@ -21,13 +28,9 @@ async function main() {
   await remoteHead.deployed();
   console.log("remoteHead deployed to: ", remoteHead.address);
 
-  const remoteHand = await Remote.deploy();
-  await remoteHand.deployed();
-  console.log("remoteHand deployed to: ", remoteHand.address);
-
-  const remoteBody = await Remote.deploy();
-  await remoteBody.deployed();
-  console.log("remoteBody deployed to: ", remoteBody.address);
+  const remoteFace = await Remote.deploy();
+  await remoteFace.deployed();
+  console.log("remoteFace deployed to: ", remoteFace.address);
 
   const remoteBadge = await Remote.deploy();
   await remoteBadge.deployed();
@@ -36,8 +39,7 @@ async function main() {
   let contractData = {
     hostAddress: host.address,
     remoteHeadAddress: remoteHead.address,
-    remoteHandAddress: remoteHand.address,
-    remoteBodyAddress: remoteBody.address,
+    remoteFaceAddress: remoteFace.address,
     remoteBadgeAddress: remoteBadge.address,
   };
   fs.writeFileSync(path_contract_addresses, JSON.stringify(contractData), {

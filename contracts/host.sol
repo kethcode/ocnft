@@ -19,7 +19,9 @@ pragma solidity ^0.8.9;
 // function setFeatureBatch(uint256 _tokenId, FeatureSetObject[] calldata inputData) 
 // function clearFeature(uint256 _tokenId, string calldata _featureName) 
 // function clearFeatureAll(uint256 _tokenId) 
-// function getFeatureList(uint256 _tokenId) 
+// function getFeatureList(uint256 _tokenId)
+
+// i feel like this needs a batch minting function, and/or maybe batch transfer function
 
 /// ----------------------------------------------------------------------------
 /// Library Imports

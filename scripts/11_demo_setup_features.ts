@@ -20,18 +20,16 @@ async function main() {
 
   const host = Host.attach(contractData['hostAddress']);
   const remoteHead = Host.attach(contractData['remoteHeadAddress']);
-  const remoteHand = Host.attach(contractData['remoteHandAddress']);
-  const remoteBody = Host.attach(contractData['remoteBodyAddress']);
+  const remoteFace = Host.attach(contractData['remoteFaceAddress']);
   const remoteBadge = Host.attach(contractData['remoteBadgeAddress']);
 
   let IpfsHash = JSON.parse(
     fs.readFileSync(path_ipfshash_data, { flag: "r+" })
   );
 
-  let cid_badge = IpfsHash["IpfsHash_badges"];
-  let cid_body = IpfsHash["IpfsHash_bodies"];
-  let cid_hand = IpfsHash["IpfsHash_hands"];
-  let cid_head = IpfsHash["IpfsHash_hats"];
+  let cid_head = IpfsHash["IpfsHash_head"];
+  let cid_face = IpfsHash["IpfsHash_face"];
+  let cid_badge = IpfsHash["IpfsHash_badge"];
 
   const accounts = await ethers.getSigners();
   let tx: any;
@@ -44,21 +42,13 @@ async function main() {
   await tx.wait();
   console.log("remoteHead.setExternalURI:",externalURI);
 
-  // hand URIs
-  tx = await remoteHand.setBaseURI(ipfs_gateway + cid_hand + "/");
-  await tx.wait();
-  console.log("remoteHand.setBaseURI:", ipfs_gateway + cid_hand + "/");
-  tx = await remoteHand.setExternalURI(externalURI);
-  await tx.wait();
-  console.log("remoteHead.setExternalURI:",externalURI);
-
   // body URIs
-  tx = await remoteBody.setBaseURI(ipfs_gateway + cid_body + "/");
+  tx = await remoteFace.setBaseURI(ipfs_gateway + cid_face + "/");
   await tx.wait();
-  console.log("remoteBody.setBaseURI:", ipfs_gateway + cid_body + "/");
-  tx = await remoteBody.setExternalURI(externalURI);
+  console.log("remoteFace.setBaseURI:", ipfs_gateway + cid_face + "/");
+  tx = await remoteFace.setExternalURI(externalURI);
   await tx.wait();
-  console.log("remoteBody.setExternalURI:",externalURI);
+  console.log("remoteFace.setExternalURI:",externalURI);
 
   // badge URIs
   tx = await remoteBadge.setBaseURI(ipfs_gateway + cid_badge + "/");
@@ -80,15 +70,15 @@ async function main() {
   tx = await host.enableFeature('HEAD_SLOT');
   await tx.wait();
   console.log("host.enableFeature: 'HEAD_SLOT'");
-  tx = await host.enableFeature('HAND_SLOT');
+  tx = await host.enableFeature('FACE_SLOT');
   await tx.wait();
-  console.log("host.enableFeature: 'HAND_SLOT'");
-  tx = await host.enableFeature('BODY_SLOT');
+  console.log("host.enableFeature: 'FACE_SLOT'");
+  tx = await host.enableFeature('BADGE1_SLOT');
   await tx.wait();
-  console.log("host.enableFeature: 'BODY_SLOT'");
-  tx = await host.enableFeature('BADGE_SLOT');
+  console.log("host.enableFeature: 'BADGE1_SLOT'");
+  tx = await host.enableFeature('BADGE2_SLOT');
   await tx.wait();
-  console.log("host.enableFeature: 'BADGE_SLOT'");
+  console.log("host.enableFeature: 'BADGE2_SLOT'");
 
   // mint some features and host token 0
   tx = await remoteHead.mint(accounts[0].address);
@@ -97,41 +87,65 @@ async function main() {
   tx = await remoteHead.mint(accounts[0].address);
   await tx.wait();
   console.log("remoteHead.mint: 1");
-  tx = await remoteHand.mint(accounts[0].address);
+  tx = await remoteHead.mint(accounts[0].address);
   await tx.wait();
-  console.log("remoteHand.mint: 0");
-  tx = await remoteHand.mint(accounts[0].address);
+  console.log("remoteHead.mint: 2");
+  tx = await remoteHead.mint(accounts[0].address);
   await tx.wait();
-  console.log("remoteHand.mint: 1");
-  tx = await remoteBody.mint(accounts[0].address);
+  console.log("remoteHead.mint: 3");
+  tx = await remoteHead.mint(accounts[0].address);
   await tx.wait();
-  console.log("remoteBody.mint: 0");
-  tx = await remoteBody.mint(accounts[0].address);
+  console.log("remoteHead.mint: 4");
+  tx = await remoteHead.mint(accounts[0].address);
   await tx.wait();
-  console.log("remoteBody.mint: 1");
+  console.log("remoteHead.mint: 5");
+
+  tx = await remoteFace.mint(accounts[0].address);
+  await tx.wait();
+  console.log("remoteFace.mint: 0");
+  tx = await remoteFace.mint(accounts[0].address);
+  await tx.wait();
+  console.log("remoteFace.mint: 1");
+
   tx = await remoteBadge.mint(accounts[0].address);
   await tx.wait();
   console.log("remoteBadge.mint: 0");
   tx = await remoteBadge.mint(accounts[0].address);
   await tx.wait();
   console.log("remoteBadge.mint: 1");
+  tx = await remoteBadge.mint(accounts[0].address);
+  await tx.wait();
+  console.log("remoteBadge.mint: 2");
+  tx = await remoteBadge.mint(accounts[0].address);
+  await tx.wait();
+  console.log("remoteBadge.mint: 3");
+  tx = await remoteBadge.mint(accounts[0].address);
+  await tx.wait();
+  console.log("remoteBadge.mint: 4");
+
   tx = await host.mint(accounts[0].address);
   await tx.wait();
   console.log("host.mint: 0");
+  tx = await host.mint(accounts[0].address);
+  await tx.wait();
+  console.log("host.mint: 1");
+
 
   // assign some features to the host token 0
   tx = await host.setFeature(0,['HEAD_SLOT',remoteHead.address,0]);
   await tx.wait();
   console.log("host.setFeature: 0,['HEAD_SLOT',",remoteHead.address);
-  tx = await host.setFeature(0,['HAND_SLOT',remoteHand.address,0]);
+  tx = await host.setFeature(0,['FACE_SLOT',remoteFace.address,0]);
   await tx.wait();
-  console.log("host.setFeature: 0,['HAND_SLOT',",remoteHand.address);
-  tx = await host.setFeature(0,['BODY_SLOT',remoteBody.address,0]);
+  console.log("host.setFeature: 0,['FACE_SLOT',",remoteFace.address);
+  tx = await host.setFeature(0,['BADGE1_SLOT',remoteBadge.address,0]);
   await tx.wait();
-  console.log("host.setFeature: 0,['BODY_SLOT',",remoteBody.address);
-  tx = await host.setFeature(0,['BADGE_SLOT',remoteBadge.address,0]);
+  console.log("host.setFeature: 0,['BADGE1_SLOT',",remoteBadge.address);
+
+  // assign some features to the host token 1
+  tx = await host.setFeatureBatch(1,[['HEAD_SLOT',remoteHead.address,4],['FACE_SLOT',remoteFace.address,1],['BADGE1_SLOT',remoteBadge.address,4],['BADGE2_SLOT',remoteBadge.address,1]]);
   await tx.wait();
-  console.log("host.setFeature: 0,['BADGE_SLOT',",remoteBadge.address);
+  console.log("host.setFeatureBatch: 1");
 }
 
 main().catch((error) => {

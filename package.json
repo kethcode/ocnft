@@ -14,8 +14,8 @@
     "test": "hardhat test",
     "deploy_rinkeby": "hardhat run scripts/01_deploy.ts --network rinkeby",
     "verify_rinkeby": "hardhat run scripts/02_verify.ts --network rinkeby",
-	"demo_setup_ipfs": "hardhat run scripts/10_demo_setup_ipfs_images.ts --network rinkeby",
-	"demo_setup_features": "hardhat run scripts/11_demo_setup_features.ts --network rinkeby"
+    "demo_setup_ipfs": "hardhat run scripts/10_demo_setup_ipfs_images.js --network rinkeby",
+    "demo_setup_features": "hardhat run scripts/11_demo_setup_features.ts --network rinkeby"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
+    "@pinata/sdk": "^1.1.25",
     "@types/chai-as-promised": "^7.1.5",
     "abbrev": "^1.0.9",
     "abort-controller": "^3.0.0",

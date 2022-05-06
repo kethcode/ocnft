@@ -1,6 +1,6 @@
 # OCNFT POC
 
-https://rinkeby.etherscan.io/address/0x33246df81d7DA6Eb11470CFf62B831Fabf265b81
+https://rinkeby.etherscan.io/address/0x121A808ce25e1B6Cecd1C116022b058e5dcE32bf
 
 ```shell
 yarn compile

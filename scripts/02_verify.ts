@@ -2,7 +2,12 @@ import { ethers } from "hardhat";
 
 const hre = require("hardhat");
 const fs = require("fs");
-const path_contract_addresses = "./data/contract_addresses.json";
+const path = require("path");
+
+const path_contract_addresses = path.resolve(
+  __dirname,
+  `../data/contract_addresses.json`
+);
 
 async function main() {
 

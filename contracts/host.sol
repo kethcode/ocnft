@@ -437,12 +437,12 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
                 .remoteContractAddr
             )
           ),
-          '","',
+          '",',
           Strings.toString(
             selectedFeatures[_tokenId][enabledFeatures[i].featureHash]
               .remoteTokenId
           ),
-          '"]',
+          ']',
           i == length - 1 ? "" : "," // the correct number of commas in the correct places
         )
       );

@@ -22,14 +22,14 @@ async function main() {
   let tx: any;
 
   // reassign some features to the host token 0
-  tx = await host.setFeatureBatch(0,[['HEAD_SLOT',remoteHead.address,1],['FACE_SLOT',remoteFace.address,0],['BADGE1_SLOT',remoteBadge.address,2],['BADGE2_SLOT',remoteBadge.address,3]]);
+  tx = await host.setFeatures(0,[['HEAD_SLOT',remoteHead.address,2],['BADGE1_SLOT',remoteBadge.address,4],['BADGE2_SLOT',remoteBadge.address,0]]);
   await tx.wait();
-  console.log("host.setFeatureBatch: 0");
+  console.log("host.setFeatures: 0");
 
   // clear features to the host token 1
-  tx = await host.clearFeatureAll(1);
+  tx = await host.clearFeatures(1,['HEAD_SLOT','BADGE1_SLOT','BADGE2_SLOT']);
   await tx.wait();
-  console.log("host.setFeatureBatch: 1");
+  console.log("host.clearFeatures: 1");
 }
 
 main().catch((error) => {

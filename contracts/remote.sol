@@ -59,19 +59,29 @@ contract remote is ERC721Enumerable, Ownable {
   /// ------------------------------------------------------------------------
   
   /**
-  * @dev Empty Constructor, calls remote constructor with long name and symbol
-  */
-  constructor() ERC721(nftName, nftSymbol) {}
+   * @param _bURI assigns to baseURI for metadata generation
+   * @param _eURI assigns to externalURI for metadata generation
+   * @dev Calls remote constructor with long name and symbol
+   */
+  constructor(string memory _bURI, string memory _eURI) ERC721(nftName, nftSymbol) {
+    baseURI = _bURI;
+    externalURI = _eURI;
+  }
 
   /// ------------------------------------------------------------------------
   /// Basic NFT Functionality
   /// ------------------------------------------------------------------------
 
   /**
-  * @param to Address to receive the NFT
-  */
-  function mint(address to) public onlyOwner {
-    _mint(to, totalSupply());
+   * @param _to Address to receive the NFT
+   * @param _quantity number of nfts to mint to target address
+   * @dev honestly, should override _mint to batch mint cheaper
+   * @dev but OZ contracts have key variables marked private
+   */
+  function mint(address _to, uint256 _quantity) public onlyOwner {
+    for(uint256 i = 0; i < _quantity; i++) {
+      _mint(_to, totalSupply());
+    }
   }
 
   /**

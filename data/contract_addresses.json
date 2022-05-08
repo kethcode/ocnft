@@ -1,6 +1,1 @@
-{
-  "hostAddress": "0x121A808ce25e1B6Cecd1C116022b058e5dcE32bf",
-  "remoteHeadAddress": "0x6602EaB3eda0feaaAa2408d30D191C109eAE3d7C",
-  "remoteFaceAddress": "0x0846510777bb7bfCc1D8909a1A28638F98d17Ff4",
-  "remoteBadgeAddress": "0xf4764A8FCB7aCE782B5EEdc944319899cE78b11A"
-}
+{"hostAddress":"0xEeb046fBbA147FCdA417e5e1Fe1B71FF2a66fb54","remoteHeadAddress":"0xb982873AaD3D1e8411FD5Ba498403Aa011d58f7a","remoteFaceAddress":"0x49A6B3dDD5eA0A121110b90571162b3Dc91Be670","remoteBadgeAddress":"0x60f3B6Cf002429D2b9CE253FFe3Ab47828fE5321"}

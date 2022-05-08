@@ -5,21 +5,19 @@ pragma solidity ^0.8.9;
 /// Overview
 /// ----------------------------------------------------------------------------
 
-// function mint(address to)   
-// function setBaseURI(string calldata _bURI)   
-// function setExternalURI(string calldata _eURI)   
-// function tokenURI(uint256 _tokenId) 
-// function withdraw()  
-// function withdrawToken()  
+// function mint(address to)
+// function setBaseURI(string calldata _bURI)
+// function setExternalURI(string calldata _eURI)
+// function tokenURI(uint256 _tokenId)
+// function withdraw()
+// function withdrawToken()
 
-// function enableFeature(string calldata _featureName)  
-// function disableFeature(string calldata _featureName)  
-// function getEnabledFeatures()
-// function setFeature(uint256 _tokenId, FeatureSetObject calldata inputData) 
-// function setFeatureBatch(uint256 _tokenId, FeatureSetObject[] calldata inputData) 
-// function clearFeature(uint256 _tokenId, string calldata _featureName) 
-// function clearFeatureAll(uint256 _tokenId) 
-// function getFeatureList(uint256 _tokenId)
+// function enableFeatures(string[] calldata _featureName)
+// function disableFeatures(string[] calldata _featureName)
+// function getEnabledFeatures() public view returns (FeatureData[] memory)
+// function setFeatures(uint256 _tokenId, FeatureSetObject[] calldata inputData)
+// function clearFeatures(uint256 _tokenId, string[] calldata _featureName)
+// function getFeatures(uint256 _tokenId) public view returns (string memory)
 
 // i feel like this needs a batch minting function, and/or maybe batch transfer function
 
@@ -31,7 +29,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-// I feel like we also need AccessControl so we can enable transfer for 
+// I feel like we also need AccessControl so we can enable transfer for
 // OPCO distribution of soulbound nfts
 
 // import "hardhat/console.sol";
@@ -116,14 +114,14 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   string public externalURI;
 
   /**
-  * @dev use enableFeature(string) to register a feature that can be setFeature
-  * @dev was tempted to map to bool, but wanted to be able to iterate these later
-  */
+   * @dev use enableFeature(string) to register a feature that can be setFeature
+   * @dev was tempted to map to bool, but wanted to be able to iterate these later
+   */
   FeatureData[] public enabledFeatures;
 
   /**
-  * @dev tokenId => featureHash => remote contract [addr,id]
-  */
+   * @dev tokenId => featureHash => remote contract [addr,id]
+   */
   mapping(uint256 => mapping(bytes32 => RemoteFeature)) public selectedFeatures;
 
   /// ------------------------------------------------------------------------
@@ -131,40 +129,50 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   /// ------------------------------------------------------------------------
 
   /**
-  * @dev Empty Constructor, calls remote constructor with long name and symbol
-  */
-  constructor() ERC721(nftName, nftSymbol) {}
+   * @param _bURI assigns to baseURI for metadata generation
+   * @param _eURI assigns to externalURI for metadata generation
+   * @dev Calls remote constructor with long name and symbol
+   */
+  constructor(string memory _bURI, string memory _eURI) ERC721(nftName, nftSymbol) {
+    baseURI = _bURI;
+    externalURI = _eURI;
+  }
 
   /// ------------------------------------------------------------------------
   /// Basic NFT Functionality
   /// ------------------------------------------------------------------------
 
   /**
-  * @param to Address to receive the NFT
-  */
-  function mint(address to) public onlyOwner {
-    _mint(to, totalSupply());
+   * @param _to Address to receive the NFT
+   * @param _quantity number of nfts to mint to target address
+   * @dev honestly, should override _mint to batch mint cheaper
+   * @dev but OZ contracts have key variables marked private
+   */
+  function mint(address _to, uint256 _quantity) public onlyOwner {
+    for(uint256 i = 0; i < _quantity; i++) {
+      _mint(_to, totalSupply());
+    }
   }
 
   /**
-  * @param _bURI baseURI to be used to retreive image data
-  */
+   * @param _bURI baseURI to be used to retreive image data
+   */
   function setBaseURI(string calldata _bURI) public onlyOwner {
     baseURI = _bURI;
     emit BaseURISet(baseURI);
   }
 
   /**
-  * @param _eURI alternate externalURI base to be used to view the NFT
-  */
+   * @param _eURI alternate externalURI base to be used to view the NFT
+   */
   function setExternalURI(string calldata _eURI) public onlyOwner {
     externalURI = _eURI;
     emit ExternalURISet(externalURI);
   }
 
   /**
-  * @param _tokenId Token index of the json metadata to retrieve
-  */
+   * @param _tokenId Token index of the json metadata to retrieve
+   */
   function tokenURI(uint256 _tokenId)
     public
     view
@@ -176,9 +184,9 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   }
 
   /**
-  * @param _tokenId Token index of the json metadata to generate
-  * @dev Returned data is base64 encoded
-  */
+   * @param _tokenId Token index of the json metadata to generate
+   * @dev Returned data is base64 encoded
+   */
   function _getMetadata(uint256 _tokenId)
     internal
     view
@@ -208,8 +216,8 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   }
 
   /**
-  * @dev used to retrieve all ETH from the contract. multisig friendly.
-  */
+   * @dev used to retrieve all ETH from the contract. multisig friendly.
+   */
   function withdraw() public onlyOwner {
     (bool sent, ) = msg.sender.call{value: address(this).balance}("");
     if (!sent) {
@@ -218,9 +226,9 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   }
 
   /**
-  * @param _token ERC20 token to retrieve
-  * @dev used to retrieve all of an ERC20 token from the contract
-  */
+   * @param _token ERC20 token to retrieve
+   * @dev used to retrieve all of an ERC20 token from the contract
+   */
   function withdrawTokens(IERC20 _token) public onlyOwner {
     bool sent = _token.transfer(msg.sender, _token.balanceOf(address(this)));
     if (!sent) {
@@ -229,15 +237,15 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   }
 
   /**
-  * @dev glue logic for ERC721Enumerable
-  */
+   * @dev glue logic for ERC721Enumerable
+   */
   function _baseURI() internal view override returns (string memory) {
     return baseURI;
   }
 
   /**
-  * @dev override to disable transfer.  May need to AccessControl this instead.
-  */
+   * @dev override to disable transfer.  May need to AccessControl this instead.
+   */
   function _transfer(
     address,
     address,
@@ -251,91 +259,55 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   /// ------------------------------------------------------------------------
 
   /**
-  * @param _featureName string representation of feature slot to enable
-  * @dev string is hashed and added to enabledFeatures
-  */
-  function enableFeature(string calldata _featureName) public onlyOwner {
-    bytes32 featureSlot = keccak256(abi.encodePacked(_featureName));
-
-    enabledFeatures.push(FeatureData(_featureName, featureSlot));
-    emit FeatureEnabled(_featureName);
+   * @param _featureName string representations of feature slot to enable
+   * @dev strings are hashed and added to enabledFeatures
+   */
+  function enableFeatures(string[] calldata _featureName) public onlyOwner {
+    for (uint256 i = 0; i < _featureName.length; i++) {
+      bytes32 featureSlot = keccak256(abi.encodePacked(_featureName[i]));
+      enabledFeatures.push(FeatureData(_featureName[i], featureSlot));
+      emit FeatureEnabled(_featureName[i]);
+    }
   }
 
   /**
-  * @param _featureName string representation of feature slot to disable
-  * @dev string is hashed and removed from enabledFeatures
-  * @dev does not check if it exists first
-  */
-  function disableFeature(string calldata _featureName) public onlyOwner {
-    bytes32 featureSlot = keccak256(abi.encodePacked(_featureName));
+   * @param _featureName string representations of feature slot to disable
+   * @dev strings are hashed and removed from enabledFeatures
+   * @dev does not check if it exists first
+   */
+  function disableFeatures(string[] calldata _featureName) public onlyOwner {
+    for (uint256 i = 0; i < _featureName.length; i++) {
+      bytes32 featureSlot = keccak256(abi.encodePacked(_featureName[i]));
 
-    // delete array element while maintaining no gaps
-    for (uint256 i = 0; i < enabledFeatures.length; i++) {
-      if (enabledFeatures[i].featureHash == featureSlot) {
-        enabledFeatures[i] = enabledFeatures[enabledFeatures.length - 1];
-        enabledFeatures.pop();
-        emit FeatureDisabled(_featureName);
-        break;
+      // delete array element while maintaining no gaps
+      for (uint256 j = 0; j < enabledFeatures.length; j++) {
+        if (enabledFeatures[j].featureHash == featureSlot) {
+          enabledFeatures[j] = enabledFeatures[enabledFeatures.length - 1];
+          enabledFeatures.pop();
+          emit FeatureDisabled(_featureName[i]);
+          break;
+        }
       }
     }
   }
 
   /**
-  * @dev utility function to fetch array of structs
-  */
+   * @dev utility function to fetch array of structs
+   */
   function getEnabledFeatures() public view returns (FeatureData[] memory) {
     return enabledFeatures;
   }
 
   /**
-  * @param _tokenId host token number to configure 
-  * @param inputData [_featureName, _remoteContractAddr, _remoteTokenId]
-  * @dev stores remote contract address and tokenId for a specific feature
-  * @dev these values will be used to retrieve the remote image for layering
-  */
-  function setFeature(uint256 _tokenId, FeatureSetObject calldata inputData)
+   * @param _tokenId host token number to configure
+   * @param inputData [_featureName, _remoteContractAddr, _remoteTokenId][]
+   * @dev stores remote contract address and tokenId for a specific feature
+   * @dev these values will be used to retrieve the remote image for layering
+   */
+  function setFeatures(uint256 _tokenId, FeatureSetObject[] calldata inputData)
     public
     nonReentrant
   {
-    if (_exists(_tokenId) == false) revert invalidTokenId();
-    if (msg.sender != ownerOf(_tokenId)) revert isNotTokenOwner();
-    if (address(inputData._remoteContractAddr) == address(0))
-      revert invalidAddress();
-    if (
-      inputData._remoteContractAddr.ownerOf(inputData._remoteTokenId) !=
-      msg.sender
-    ) revert IsNotRemoteTokenOwner();
-
-    bytes32 featureSlot = keccak256(abi.encodePacked(inputData._featureName));
-
-    bool found = false;
-    uint256 length = enabledFeatures.length;
-    for (uint256 i = 0; i < length; i++) {
-      if (enabledFeatures[i].featureHash == featureSlot) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) revert invalidFeature();
-
-    selectedFeatures[_tokenId][featureSlot].remoteContractAddr = address(
-      inputData._remoteContractAddr
-    );
-    selectedFeatures[_tokenId][featureSlot].remoteTokenId = inputData
-      ._remoteTokenId;
-
-    emit FeatureSet(msg.sender, _tokenId, inputData._featureName);
-  }
-
-  /**
-  * @param _tokenId host token number to configure 
-  * @param inputData [_featureName, _remoteContractAddr, _remoteTokenId][]
-  * @dev same as setFeature, but allows multiple features to be set in one call
-  */
-  function setFeatureBatch(
-    uint256 _tokenId,
-    FeatureSetObject[] calldata inputData
-  ) public nonReentrant {
     if (_exists(_tokenId) == false) revert invalidTokenId();
     if (msg.sender != ownerOf(_tokenId)) revert isNotTokenOwner();
 
@@ -375,51 +347,30 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
   }
 
   /**
-  * @param _tokenId host token number to configure 
-  * @param _featureName string representation of feature slot to erase
-  * @dev clears the feature data for this slot from this token
-  */
-  function clearFeature(uint256 _tokenId, string calldata _featureName) public {
+   * @param _tokenId host token number to configure
+   * @param _featureName string representations of feature slot to erase
+   * @dev clears the feature data for this slot from this token
+   */
+  function clearFeatures(uint256 _tokenId, string[] calldata _featureName)
+    public
+  {
     if (_exists(_tokenId) == false) revert invalidTokenId();
     if (msg.sender != ownerOf(_tokenId)) revert isNotTokenOwner();
 
-    bytes32 featureSlot = keccak256(abi.encodePacked(_featureName));
-
-    selectedFeatures[_tokenId][featureSlot].remoteContractAddr = address(0);
-    selectedFeatures[_tokenId][featureSlot].remoteTokenId = 0;
-
-    emit FeatureCleared(msg.sender, _tokenId, _featureName);
-  }
-
-  /**
-  * @param _tokenId host token number to configure 
-  * @dev clears all enabled feature data slots from this token
-  */
-  function clearFeatureAll(uint256 _tokenId) public {
-    if (_exists(_tokenId) == false) revert invalidTokenId();
-    if (msg.sender != ownerOf(_tokenId)) revert isNotTokenOwner();
-
-    uint256 length = enabledFeatures.length;
-
-    for (uint256 i = 0; i < length; i++) {
-      selectedFeatures[_tokenId][enabledFeatures[i].featureHash]
-        .remoteContractAddr = address(0);
-      selectedFeatures[_tokenId][enabledFeatures[i].featureHash]
-        .remoteTokenId = 0;
-      emit FeatureCleared(msg.sender, _tokenId, enabledFeatures[i].featureName);
+    for (uint256 i = 0; i < _featureName.length; i++) {
+      bytes32 featureSlot = keccak256(abi.encodePacked(_featureName[i]));
+      selectedFeatures[_tokenId][featureSlot].remoteContractAddr = address(0);
+      selectedFeatures[_tokenId][featureSlot].remoteTokenId = 0;
+      emit FeatureCleared(msg.sender, _tokenId, _featureName[i]);
     }
   }
 
   /**
-  * @param _tokenId host token number to retrieve 
-  * @dev returns json array of feature names, addresses, and tokens
-  * @dev used to fetch and generate the final NFT image
-  */
-  function getFeatureList(uint256 _tokenId)
-    public
-    view
-    returns (string memory)
-  {
+   * @param _tokenId host token number to retrieve
+   * @dev returns json array of feature names, addresses, and tokens
+   * @dev used to fetch and generate the final NFT image
+   */
+  function getFeatures(uint256 _tokenId) public view returns (string memory) {
     if (_exists(_tokenId) == false) revert invalidTokenId();
     string memory featureList = "{";
 
@@ -442,7 +393,7 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
             selectedFeatures[_tokenId][enabledFeatures[i].featureHash]
               .remoteTokenId
           ),
-          ']',
+          "]",
           i == length - 1 ? "" : "," // the correct number of commas in the correct places
         )
       );
@@ -458,11 +409,11 @@ contract host is ERC721Enumerable, Ownable, ReentrancyGuard {
 /// ----------------------------------------------------------------------------
 
 /**
-* @dev Base64 copied from Primes NFT
-* @dev https://etherscan.io/address/0xBDA937F5C5f4eFB2261b6FcD25A71A1C350FdF20#code#L1507
-* @dev Slightly cheaper than the common implementations going around
-* @dev Used to base64 encode metadata on the fly for simple browser decode
-*/
+ * @dev Base64 copied from Primes NFT
+ * @dev https://etherscan.io/address/0xBDA937F5C5f4eFB2261b6FcD25A71A1C350FdF20#code#L1507
+ * @dev Slightly cheaper than the common implementations going around
+ * @dev Used to base64 encode metadata on the fly for simple browser decode
+ */
 library Base64 {
   string internal constant TABLE_ENCODE =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

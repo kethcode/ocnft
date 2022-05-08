@@ -15,7 +15,7 @@ describe("Remote", () => {
 
   let Remote: Contract;
   beforeEach(async () => {
-    Remote = await RemoteFactory.deploy();
+    Remote = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
   });
 
   describe("construction", () => {
@@ -25,11 +25,11 @@ describe("Remote", () => {
   });
 
   describe("baseURI", () => {
-    describe("default at deploy", () => {
-      it("should be blank", async () => {
-        expect(await Remote.baseURI()).to.deep.equal("");
-      });
-    });
+    // describe("default at deploy", () => {
+    //   it("should be blank", async () => {
+    //     expect(await Remote.baseURI()).to.deep.equal("");
+    //   });
+    // });
 
     describe("after being set", () => {
       it("should match the input", async () => {
@@ -47,7 +47,7 @@ describe("Remote", () => {
         mintList.push(parseInt(await Remote.totalSupply()));
 
         for (let i = 0; i < 4; i++) {
-          Remote.mint(await signers[0].getAddress());
+          Remote.mint(await signers[0].getAddress(),1);
           mintList.push(parseInt(await Remote.totalSupply()));
         }
 
@@ -58,7 +58,7 @@ describe("Remote", () => {
     describe("when called by non-owner", () => {
       it("should revert with 'Ownable: caller is not the owner'", async () => {
         expect(
-          Remote.connect(signers[1]).mint(await signers[0].getAddress())
+          Remote.connect(signers[1]).mint(await signers[0].getAddress(),1)
         ).to.be.revertedWith("Ownable: caller is not the owner");
       });
     });
@@ -77,7 +77,7 @@ describe("Remote", () => {
           "https://kethic.mypinata.cloud/ipfs/QmeDo7kdQdoc9v1ucgMPTrGGqVFWcmvnaWrS7a4yJ4ema8/"
         );
         await Remote.setExternalURI("http://localhost:4201/");
-        await Remote.mint(await signers[0].getAddress());
+        await Remote.mint(await signers[0].getAddress(),1);
         const metadata = await Remote.tokenURI(0);
         expect(metadata).to.deep.equal(
           "data:application/json;base64,eyJuYW1lIjoicmVtb3RlIiwiZGVzY3JpcHRpb24iOiJvY25mdCByZW1vdGUiLCJpbWFnZSI6Imh0dHBzOi8va2V0aGljLm15cGluYXRhLmNsb3VkL2lwZnMvUW1lRG83a2RRZG9jOXYxdWNnTVBUckdHcVZGV2Ntdm5hV3JTN2E0eUo0ZW1hOC8wLnBuZyIsImV4dGVybmFsX3VybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDIwMS8wIn0="

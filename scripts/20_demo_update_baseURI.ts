@@ -6,7 +6,7 @@ const path_ipfshash_data = "./data/ipfs_cids.json";
 const path_contract_addresses = "./data/contract_addresses.json";
 
 const ipfs_gateway = "https://kethic.mypinata.cloud/ipfs/";
-const hostBaseURI = "https://localhost:4200/";
+const hostBaseURI = "http://45.77.213.147:4200/";
 const externalURI = "https://localhost:4201/";
 
 async function main() {
@@ -34,6 +34,12 @@ async function main() {
   const accounts = await ethers.getSigners();
   let tx: any;
 
+  // host URIs
+  console.log("host.setBaseURI:", hostBaseURI);
+  tx = await host.setBaseURI(hostBaseURI);
+  await tx.wait();
+  console.log("remoteBadge.setBaseURI:", hostBaseURI + " complete");
+
   // // head URIs
   // tx = await remoteHead.setBaseURI(ipfs_gateway + cid_head + "/");
   // await tx.wait();
@@ -44,12 +50,11 @@ async function main() {
   // await tx.wait();
   // console.log("remoteFace.setBaseURI:", ipfs_gateway + cid_face + "/");
 
-  // badge URIs
-  console.log("remoteBadge.setBaseURI:", ipfs_gateway + cid_badge + "/");
-  tx = await remoteBadge.setBaseURI(ipfs_gateway + cid_badge + "/");
-  console.log(tx);
-  await tx.wait();
-  console.log("remoteBadge.setBaseURI:", ipfs_gateway + cid_badge + "/ complete");
+  // // badge URIs
+  // console.log("remoteBadge.setBaseURI:", ipfs_gateway + cid_badge + "/");
+  // tx = await remoteBadge.setBaseURI(ipfs_gateway + cid_badge + "/");
+  // await tx.wait();
+  // console.log("remoteBadge.setBaseURI:", ipfs_gateway + cid_badge + "/ complete");
 }
 
 main().catch((error) => {

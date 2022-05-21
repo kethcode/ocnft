@@ -10,7 +10,6 @@ const hostBaseURI = "http://45.77.213.147:4200/";
 const externalURI = "https://localhost:4201/";
 
 async function main() {
-
   let contractData = JSON.parse(
     fs.readFileSync(path_contract_addresses, { flag: "r+" })
   );
@@ -18,10 +17,10 @@ async function main() {
   const Host = await ethers.getContractFactory("host");
   const Remote = await ethers.getContractFactory("remote");
 
-  const host = Host.attach(contractData['hostAddress']);
-  const remoteHead = Remote.attach(contractData['remoteHeadAddress']);
-  const remoteFace = Remote.attach(contractData['remoteFaceAddress']);
-  const remoteBadge = Remote.attach(contractData['remoteBadgeAddress']);
+  const host = Host.attach(contractData["hostAddress"]);
+  const remoteHead = Remote.attach(contractData["remoteHeadAddress"]);
+  const remoteFace = Remote.attach(contractData["remoteFaceAddress"]);
+  const remoteBadge = Remote.attach(contractData["remoteBadgeAddress"]);
 
   let IpfsHash = JSON.parse(
     fs.readFileSync(path_ipfshash_data, { flag: "r+" })

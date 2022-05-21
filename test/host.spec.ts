@@ -2,6 +2,10 @@ import { expect } from "./setup";
 import { Contract, ContractFactory, Signer } from "ethers";
 import { ethers } from "hardhat";
 
+// const hashfn = (element: any) => {
+//   return Buffer.from(ethers.utils.keccak256(element).slice(2), "hex");
+// };
+
 describe("Host", () => {
   let signers: Signer[];
   before(async () => {
@@ -16,8 +20,30 @@ describe("Host", () => {
   });
 
   let Host: Contract;
+
+  const headSlotHash = ethers.utils.keccak256(
+    ethers.utils.toUtf8Bytes("HEAD_SLOT")
+  );
+
+  const faceSlotHash = ethers.utils.keccak256(
+    ethers.utils.toUtf8Bytes("FACE_SLOT")
+  );
+
+  const badge1SlotHash = ethers.utils.keccak256(
+    ethers.utils.toUtf8Bytes("BADGE1_SLOT")
+  );
+
+  const badge2SlotHash = ethers.utils.keccak256(
+    ethers.utils.toUtf8Bytes("BADGE2_SLOT")
+  );
+
+  // const headSlotHash = hashfn(ethers.utils.toUtf8Bytes("HEAD_SLOT"));
+
   beforeEach(async () => {
-    Host = await HostFactory.deploy("https://localhost:4200/","https://localhost:4201/");
+    Host = await HostFactory.deploy(
+      "https://localhost:4200/",
+      "https://localhost:4201/"
+    );
   });
 
   /// ------------------------------------------------------------------------
@@ -110,7 +136,7 @@ describe("Host", () => {
       it("should return json metadata base64 blob", async () => {
         await Host.setBaseURI("http://localhost:4200/");
         await Host.setExternalURI("http://localhost:4201/");
-        await Host.mint(await signers[0].getAddress(),1);
+        await Host.mint(await signers[0].getAddress(), 1);
 
         // this also exercises _getMetadata(uint256 _tokenId) internal view
         const metadata = await Host.tokenURI(0);
@@ -156,7 +182,7 @@ describe("Host", () => {
   describe("Soulbound", () => {
     describe("transferFrom(from, to, tokenId)", () => {
       it("should revert with Soulbound()", async () => {
-        Host.mint(await signers[0].getAddress(),1);
+        Host.mint(await signers[0].getAddress(), 1);
         await expect(
           Host.transferFrom(signers[0].getAddress(), signers[1].getAddress(), 0)
         ).to.be.revertedWith("isSoulbound()");
@@ -168,40 +194,79 @@ describe("Host", () => {
   /// Specific Functionality
   /// ------------------------------------------------------------------------
 
+  // function enableFeatures(FeatureData[] calldata _featureData)
+  // [bytes32 featureHash, uint160 layer, uint24 x, uint24 y, uint24 w, uint24 h]
   describe("enableFeatures", () => {
     describe("when called from non-owner", () => {
       it("should revert()", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-
+        await Host.mint(await signers[0].getAddress(), 1);
         await expect(
-          Host.connect(signers[1]).enableFeatures(["HEAD_SLOT"])
+          Host.connect(signers[1]).enableFeatures([
+            [headSlotHash, 0, 0, 0, 0, 0],
+          ])
         ).to.be.revertedWith("Ownable: caller is not the owner");
       });
     });
 
-    describe("when called from owner with valid _featureName", () => {
+    describe("when called from owner with a single valid FeatureData", () => {
       it("should add to enabledFeatures", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-        await Host.enableFeatures(["HEAD_SLOT"]);
-
-        const featureSlot = ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes("HEAD_SLOT")
-        );
+        await Host.mint(await signers[0].getAddress(), 1);
+        await Host.enableFeatures([[headSlotHash, 0, 0, 0, 0, 0]]);
 
         let featureData = await Host.getEnabledFeatures();
-
-        expect(featureData[0].featureName, featureData[0].featureHash).to.equal(
-          "HEAD_SLOT",
-          featureSlot
-        );
+        expect([
+          featureData[0].featureHash,
+          featureData[0].layer,
+          featureData[0].x,
+          featureData[0].y,
+          featureData[0].w,
+          featureData[0].h,
+        ]).to.deep.equal([headSlotHash, ethers.BigNumber.from(0), 0, 0, 0, 0]);
       });
 
       it("should emit FeatureEnabled", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
+        await Host.mint(await signers[0].getAddress(), 1);
 
-        await expect(Host.enableFeatures(["HEAD_SLOT"]))
+        await expect(Host.enableFeatures([[headSlotHash, 0, 0, 0, 0, 0]]))
           .to.emit(Host, "FeatureEnabled")
-          .withArgs("HEAD_SLOT");
+          .withArgs(headSlotHash);
+      });
+    });
+
+    describe("when called from owner with a multiple valid FeatureData", () => {
+      it("should add to enabledFeatures", async () => {
+        await Host.mint(await signers[0].getAddress(), 1);
+        await Host.enableFeatures([
+          [headSlotHash, 0, 1, 1, 1, 1],
+          [faceSlotHash, 1, 2, 2, 2, 2],
+        ]);
+
+        let featureData = await Host.getEnabledFeatures();
+        expect(featureData).to.deep.equal([
+          [headSlotHash, ethers.BigNumber.from(0), 1, 1, 1, 1],
+          [faceSlotHash, ethers.BigNumber.from(1), 2, 2, 2, 2],
+        ]);
+      });
+    });
+
+    describe("when called multiple times", () => {
+      it("should provides gas usage numbers", async () => {
+        await Host.mint(await signers[0].getAddress(), 1);
+
+        let featureList = [];
+        for (let i = 0; i < 32; i++) {
+          featureList.push([
+            ethers.utils.keccak256(
+              ethers.utils.toUtf8Bytes("slot_" + i.toString())
+            ),
+            0,
+            0,
+            0,
+            0,
+            0,
+          ]);
+          await Host.enableFeatures(featureList);
+        }
       });
     });
   });
@@ -209,41 +274,95 @@ describe("Host", () => {
   describe("disableFeatures", () => {
     describe("when called from non-owner", () => {
       it("should revert()", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-        await Host.enableFeatures(["HEAD_SLOT"]);
+        await Host.mint(await signers[0].getAddress(), 1);
+        await Host.enableFeatures([[headSlotHash, 0, 0, 0, 0, 0]]);
 
         await expect(
-          Host.connect(signers[1]).disableFeatures(["HEAD_SLOT"])
+          Host.connect(signers[1]).disableFeatures([headSlotHash])
         ).to.be.revertedWith("Ownable: caller is not the owner");
       });
     });
 
-    describe("when called from owner with valid _featureName", () => {
+    describe("when called from owner with single valid featureHash", () => {
       it("should remove from enabledFeatures", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-        await Host.enableFeatures(["HEAD_SLOT", "HAND_SLOT"]);
+        await Host.mint(await signers[0].getAddress(), 1);
+        await Host.enableFeatures([
+          [headSlotHash, 0, 1, 1, 1, 1],
+          [faceSlotHash, 1, 2, 2, 2, 2],
+        ]);
 
-        await Host.disableFeatures(["HEAD_SLOT"]);
+        await Host.disableFeatures([headSlotHash]);
 
         let featureData = await Host.getEnabledFeatures();
-
-        const featureSlot = ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes("HAND_SLOT")
-        );
-
-        expect(featureData[0].featureName, featureData[0].featureHash).to.equal(
-          "HAND_SLOT",
-          featureSlot
-        );
+        expect(featureData).to.deep.equal([
+          [faceSlotHash, ethers.BigNumber.from(1), 2, 2, 2, 2],
+        ]);
       });
 
       it("should emit FeatureDisabled", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-        await Host.enableFeatures(["HEAD_SLOT", "HAND_SLOT"]);
+        await Host.mint(await signers[0].getAddress(), 1);
+        await Host.enableFeatures([
+          [headSlotHash, 0, 1, 1, 1, 1],
+          [faceSlotHash, 1, 2, 2, 2, 2],
+        ]);
 
-        await expect(Host.disableFeatures(["HEAD_SLOT"]))
+        await expect(Host.disableFeatures([headSlotHash]))
           .to.emit(Host, "FeatureDisabled")
-          .withArgs("HEAD_SLOT");
+          .withArgs(headSlotHash);
+      });
+    });
+
+    describe("when called from owner with multiple valid featureHash", () => {
+      it("should remove from enabledFeatures", async () => {
+        await Host.mint(await signers[0].getAddress(), 1);
+        await Host.enableFeatures([
+          [headSlotHash, 0, 1, 1, 1, 1],
+          [faceSlotHash, 1, 2, 2, 2, 2],
+          [badge1SlotHash, 2, 3, 3, 3, 3],
+          [badge2SlotHash, 3, 4, 4, 4, 4],
+        ]);
+
+        await Host.disableFeatures([headSlotHash, badge1SlotHash]);
+
+        let featureData = await Host.getEnabledFeatures();
+
+        expect(featureData).to.deep.equal([
+          [badge2SlotHash, ethers.BigNumber.from(3), 4, 4, 4, 4],
+          [faceSlotHash, ethers.BigNumber.from(1), 2, 2, 2, 2],
+        ]);
+      });
+    });
+
+    // note:  this script enables AND DISABLES all features every time
+    //        so host gas costs are huge (new storage, large write)
+    //        I mention this because the previous gas sweep loop
+    //        reports much less gas for updating an existing feature table
+    //        (max 244k vs max 1.25m gas for 32 features)
+    describe("when called multiple times", () => {
+      it("should provides gas usage numbers", async () => {
+        await Host.mint(await signers[0].getAddress(), 1);
+
+        let featureList = [];
+        let featureHashes = [];
+        for (let i = 0; i < 32; i++) {
+          featureList.push([
+            ethers.utils.keccak256(
+              ethers.utils.toUtf8Bytes("slot_" + i.toString())
+            ),
+            0,
+            0,
+            0,
+            0,
+            0,
+          ]);
+          featureHashes.push(
+            ethers.utils.keccak256(
+              ethers.utils.toUtf8Bytes("slot_" + i.toString())
+            )
+          );
+          await Host.enableFeatures(featureList);
+          await Host.disableFeatures(featureHashes);
+        }
       });
     });
   });
@@ -251,42 +370,63 @@ describe("Host", () => {
   describe("getEnabledFeatures", () => {
     describe("when called", () => {
       it("should return enabledFeatures", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-        await Host.enableFeatures(["HEAD_SLOT"]);
-
-        const featureSlot = ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes("HEAD_SLOT")
-        );
+        await Host.mint(await signers[0].getAddress(), 1);
+        await Host.enableFeatures([
+          [headSlotHash, 0, 1, 1, 1, 1],
+          [faceSlotHash, 1, 2, 2, 2, 2],
+          [badge1SlotHash, 2, 3, 3, 3, 3],
+          [badge2SlotHash, 3, 4, 4, 4, 4],
+        ]);
 
         let featureData = await Host.getEnabledFeatures();
 
-        expect(featureData[0].featureName, featureData[0].featureHash).to.equal(
-          "HEAD_SLOT",
-          featureSlot
-        );
+        expect(featureData).to.deep.equal([
+          [headSlotHash, ethers.BigNumber.from(0), 1, 1, 1, 1],
+          [faceSlotHash, ethers.BigNumber.from(1), 2, 2, 2, 2],
+          [badge1SlotHash, ethers.BigNumber.from(2), 3, 3, 3, 3],
+          [badge2SlotHash, ethers.BigNumber.from(3), 4, 4, 4, 4],
+        ]);
       });
     });
   });
 
-  // function setFeature(uint256 _tokenId, FeatureSetObject[] calldata inputData)
-  describe("setFeatures", () => {
+  // function configureFeatures( uint256 _tokenId, SetFeatureInput[] calldata inputData )
+  // [ bytes32 _featureHash, remote _remoteContractAddr, uint256 _remoteTokenId ]
+  describe("configureFeatures", () => {
+    let remoteHead: Contract;
+    let remoteFace: Contract;
+    beforeEach(async () => {
+      await Host.mint(await signers[0].getAddress(), 1);
+
+      remoteHead = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteHead.mint(await signers[0].getAddress(), 1);
+
+      remoteFace = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteFace.mint(await signers[0].getAddress(), 1);
+
+      await Host.enableFeatures([
+        [headSlotHash, 0, 1, 2, 1, 1],
+        [faceSlotHash, 1, 2, 3, 2, 2],
+        [badge1SlotHash, 2, 3, 4, 3, 3],
+        [badge2SlotHash, 3, 4, 5, 4, 4],
+      ]);
+    });
+
     describe("when called with a single instance of remote data", () => {
       it("should add remote data", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),1);
-
-        await Host.enableFeatures(["HEAD_SLOT"]);
-        await Host.setFeatures(0, [["HEAD_SLOT", remoteHead.address, 0]]);
-
-        const featureSlot = ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes("HEAD_SLOT")
-        );
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+        ]);
 
         let [remoteContractAddr, remoteTokenId] = await Host.selectedFeatures(
           0,
-          featureSlot
+          headSlotHash
         );
 
         expect([remoteContractAddr, parseInt(remoteTokenId)]).to.deep.equal([
@@ -295,86 +435,66 @@ describe("Host", () => {
         ]);
       });
 
-      it("should emit FeatureSet once", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),1);
-
-        await Host.enableFeatures(["HEAD_SLOT"]);
-
+      it("should emit FeatureConfigured once", async () => {
         await expect(
-          Host.setFeatures(0, [["HEAD_SLOT", remoteHead.address, 0]])
+          Host.configureFeatures(0, [[headSlotHash, remoteHead.address, 0]])
         )
-          .to.emit(Host, "FeatureSet")
-          .withArgs(await signers[0].getAddress(), 0, "HEAD_SLOT");
+          .to.emit(Host, "FeatureConfigured")
+          .withArgs(0, headSlotHash);
       });
     });
 
     describe("when called with a multiple instances of remote data", () => {
       it("should add all remote data", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),1);
-
-        let remoteHand = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHand.mint(await signers[0].getAddress(),1);
-
-        await Host.enableFeatures(["HEAD_SLOT", "HAND_SLOT"]);
-        await Host.setFeatures(0, [
-          ["HEAD_SLOT", remoteHead.address, 0],
-          ["HAND_SLOT", remoteHand.address, 0],
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+          [faceSlotHash, remoteFace.address, 0],
         ]);
 
         let featureData = await Host.getFeatures(0);
         expect(featureData).to.deep.equal(
-          '{"HEAD_SLOT":["' +
+          '{0:["' +
+            headSlotHash +
+            '","' +
             remoteHead.address.toLowerCase() +
-            '",0],"HAND_SLOT":["' +
-            remoteHand.address.toLowerCase() +
-            '",0]}'
+            '",0,1,2,1,1],' +
+            '1:["' +
+            faceSlotHash +
+            '","' +
+            remoteFace.address.toLowerCase() +
+            '",0,2,3,2,2],' +
+            '2:["' +
+            badge1SlotHash +
+            '","' +
+            "0x00" +
+            '",0,3,4,3,3],' +
+            '3:["' +
+            badge2SlotHash +
+            '","' +
+            "0x00" +
+            '",0,4,5,4,4]}'
         );
       });
 
-      it("should emit FeatureSet once", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),1);
-
-        let remoteHand = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHand.mint(await signers[0].getAddress(),1);
-
-        await Host.enableFeatures(["HEAD_SLOT", "HAND_SLOT"]);
-
-        await expect(
-          Host.setFeatures(0, [
-            ["HEAD_SLOT", remoteHead.address, 0],
-            ["HAND_SLOT", remoteHand.address, 0],
+      it("should emit FeatureConfigured multiple times", async () => {
+        expect(
+          await Host.configureFeatures(0, [
+            [headSlotHash, remoteHead.address, 0],
+            [faceSlotHash, remoteFace.address, 0],
           ])
         )
-          .to.emit(Host, "FeatureSet")
-          .withArgs(await signers[0].getAddress(), 0, "HEAD_SLOT")
-          .to.emit(Host, "FeatureSet")
-          .withArgs(await signers[0].getAddress(), 0, "HAND_SLOT");
+          .to.emit(Host, "FeatureConfigured")
+          .withArgs(0, headSlotHash)
+          .to.emit(Host, "FeatureConfigured")
+          .withArgs(0, faceSlotHash);
       });
 
-      describe("when feature address in zero", () => {
+      describe("when feature address is zero", () => {
         it("should revert", async () => {
-          await Host.mint(await signers[0].getAddress(),1);
-
-          let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-          await remoteHead.mint(await signers[0].getAddress(),1);
-
-          let remoteHand = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-          await remoteHand.mint(await signers[0].getAddress(),1);
-
-          await Host.enableFeatures(["HEAD_SLOT", "HAND_SLOT"]);
           await expect(
-            Host.setFeatures(0, [
-              ["HEAD_SLOT", remoteHead.address, 0],
-              ["HAND_SLOT", "0x0000000000000000000000000000000000000000", 0],
+            Host.configureFeatures(0, [
+              [headSlotHash, remoteHead.address, 0],
+              [faceSlotHash, "0x0000000000000000000000000000000000000000", 0],
             ])
           ).to.be.revertedWith("invalidAddress()");
         });
@@ -382,28 +502,60 @@ describe("Host", () => {
     });
   });
 
-  //  clearFeatures(uint256 _tokenId, string[] calldata _featureName)
+  //  function clearFeatures(uint256 _tokenId, bytes32[] calldata _featureHashes)
   describe("clearFeatures", () => {
-    describe("when called with valid _tokenId and _featureName", () => {
-      it("should blank existing data", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
+    let remoteHead: Contract;
+    let remoteFace: Contract;
+    let remoteBadge1: Contract;
+    let remoteBadge2: Contract;
 
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),2);
+    beforeEach(async () => {
+      await Host.mint(await signers[0].getAddress(), 1);
 
-        await Host.enableFeatures(["HEAD_SLOT"]);
-        await Host.setFeatures(0, [["HEAD_SLOT", remoteHead.address, 1]]);
+      remoteHead = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteHead.mint(await signers[0].getAddress(), 1);
 
-        const featureSlot = ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes("HEAD_SLOT")
-        );
+      remoteFace = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteFace.mint(await signers[0].getAddress(), 1);
+
+      remoteBadge1 = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteBadge1.mint(await signers[0].getAddress(), 1);
+
+      remoteBadge2 = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteBadge2.mint(await signers[0].getAddress(), 1);
+
+      await Host.enableFeatures([
+        [headSlotHash, 0, 1, 2, 1, 1],
+        [faceSlotHash, 1, 2, 3, 2, 2],
+        [badge1SlotHash, 2, 3, 4, 3, 3],
+        [badge2SlotHash, 3, 4, 5, 4, 4],
+      ]);
+    });
+
+    describe("when called with valid _tokenId and a single _featureHash", () => {
+      it("should zero the data for that featureHash", async () => {
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+        ]);
 
         let [setRemoteContractAddr, setRemoteTokenId] =
-          await Host.selectedFeatures(0, featureSlot);
+          await Host.selectedFeatures(0, headSlotHash);
 
-        await Host.clearFeatures(0, ["HEAD_SLOT"]);
+        await Host.clearFeatures(0, [headSlotHash]);
         let [clearedRemoteContractAddr, clearedRemoteTokenId] =
-          await Host.selectedFeatures(0, featureSlot);
+          await Host.selectedFeatures(0, headSlotHash);
 
         expect([
           setRemoteContractAddr,
@@ -412,38 +564,85 @@ describe("Host", () => {
           parseInt(clearedRemoteTokenId),
         ]).to.deep.equal([
           remoteHead.address,
-          1,
+          0,
           "0x0000000000000000000000000000000000000000",
           0,
         ]);
       });
 
       it("should emit FeatureCleared", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+        ]);
 
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),2);
-
-        await Host.enableFeatures(["HEAD_SLOT"]);
-        await Host.setFeatures(0, [["HEAD_SLOT", remoteHead.address, 1]]);
-
-        await expect(Host.clearFeatures(0, ["HEAD_SLOT"]))
+        await expect(Host.clearFeatures(0, [headSlotHash]))
           .to.emit(Host, "FeatureCleared")
-          .withArgs(await signers[0].getAddress(), 0, "HEAD_SLOT");
+          .withArgs(0, headSlotHash);
+      });
+    });
+
+    describe("when called with valid _tokenId and multiple _featureHashes", () => {
+      it("should zero the data for all appropriate featureHashes", async () => {
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+          [faceSlotHash, remoteFace.address, 0],
+        ]);
+
+        let [setRemoteContractAddr0, setRemoteTokenId0] =
+          await Host.selectedFeatures(0, headSlotHash);
+        let [setRemoteContractAddr1, setRemoteTokenId1] =
+          await Host.selectedFeatures(0, faceSlotHash);
+
+        await Host.clearFeatures(0, [headSlotHash, faceSlotHash]);
+
+        let [clearedRemoteContractAddr0, clearedRemoteTokenId0] =
+          await Host.selectedFeatures(0, headSlotHash);
+        let [clearedRemoteContractAddr1, clearedRemoteTokenId1] =
+          await Host.selectedFeatures(0, faceSlotHash);
+
+        expect([
+          setRemoteContractAddr0,
+          parseInt(setRemoteTokenId0),
+          clearedRemoteContractAddr0,
+          parseInt(clearedRemoteTokenId0),
+          setRemoteContractAddr1,
+          parseInt(setRemoteTokenId1),
+          clearedRemoteContractAddr1,
+          parseInt(clearedRemoteTokenId1),
+        ]).to.deep.equal([
+          remoteHead.address,
+          0,
+          "0x0000000000000000000000000000000000000000",
+          0,
+          remoteFace.address,
+          0,
+          "0x0000000000000000000000000000000000000000",
+          0,
+        ]);
+      });
+
+      it("should emit multiple FeatureCleared", async () => {
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+          [faceSlotHash, remoteFace.address, 0],
+        ]);
+
+        await expect(Host.clearFeatures(0, [headSlotHash,faceSlotHash]))
+          .to.emit(Host, "FeatureCleared")
+          .withArgs(0, headSlotHash)
+          .to.emit(Host, "FeatureCleared")
+          .withArgs(0, faceSlotHash);
       });
     });
 
     describe("when called with invalid _tokenId", () => {
       it("should revert with invalidTokenId()", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+          [faceSlotHash, remoteFace.address, 0],
+        ]);
 
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),1);
-
-        await Host.enableFeatures(["HEAD_SLOT"]);
-        await Host.setFeatures(0, [["HEAD_SLOT", remoteHead.address, 0]]);
-
-        await expect(Host.clearFeatures(1, ["HEAD_SLOT"])).to.be.revertedWith(
+        await expect(Host.clearFeatures(1, [headSlotHash])).to.be.revertedWith(
           "invalidTokenId()"
         );
       });
@@ -451,16 +650,13 @@ describe("Host", () => {
 
     describe("when called on token the msg.sender does not own", () => {
       it("should revert", async () => {
-        await Host.mint(await signers[0].getAddress(),1);
-
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),1);
-
-        await Host.enableFeatures(["HEAD_SLOT"]);
-        await Host.setFeatures(0, [["HEAD_SLOT", remoteHead.address, 0]]);
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+          [faceSlotHash, remoteFace.address, 0],
+        ]);
 
         await expect(
-          Host.connect(signers[1]).clearFeatures(0, ["HEAD_SLOT"])
+          Host.connect(signers[1]).clearFeatures(0, [headSlotHash])
         ).to.be.revertedWith("isNotTokenOwner()");
       });
     });
@@ -468,48 +664,79 @@ describe("Host", () => {
 
   //  function getFeatureList(uint256 _tokenId)
   describe("getFeatures", () => {
+    let remoteHead: Contract;
+    let remoteFace: Contract;
+    let remoteBadge1: Contract;
+    let remoteBadge2: Contract;
+
+    beforeEach(async () => {
+      await Host.mint(await signers[0].getAddress(), 1);
+
+      remoteHead = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteHead.mint(await signers[0].getAddress(), 1);
+
+      remoteFace = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteFace.mint(await signers[0].getAddress(), 1);
+
+      remoteBadge1 = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteBadge1.mint(await signers[0].getAddress(), 1);
+
+      remoteBadge2 = await RemoteFactory.deploy(
+        "https://localhost:4200/",
+        "https://localhost:4201/"
+      );
+      await remoteBadge2.mint(await signers[0].getAddress(), 1);
+
+      await Host.enableFeatures([
+        [headSlotHash, 0, 1, 2, 1, 1],
+        [faceSlotHash, 1, 2, 3, 2, 2],
+        [badge1SlotHash, 2, 3, 4, 3, 3],
+        [badge2SlotHash, 3, 4, 5, 4, 4],
+      ]);
+    });
+
     describe("when called with valid _tokenId", () => {
       it("should return json feature table", async () => {
         // host
-        await Host.setBaseURI("http://localhost:4200/");
-        await Host.setExternalURI("http://localhost:4201/");
-        await Host.mint(await signers[0].getAddress(),1);
 
-        await Host.enableFeatures([
-          "HEAD_SLOT",
-          "HAND_SLOT",
-          "BODY_SLOT",
-          "BADGE_SLOT",
+        await Host.configureFeatures(0, [
+          [headSlotHash, remoteHead.address, 0],
+          [faceSlotHash, remoteFace.address, 0],
+          [badge1SlotHash, remoteBadge1.address, 0],
+          [badge2SlotHash, remoteBadge2.address, 0],
         ]);
 
-        // head
-        let remoteHead = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHead.mint(await signers[0].getAddress(),1);
-        let remoteHand = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteHand.mint(await signers[0].getAddress(),1);
-        let remoteBody = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteBody.mint(await signers[0].getAddress(),1);
-        let remoteBadge = await RemoteFactory.deploy("https://localhost:4200/","https://localhost:4201/");
-        await remoteBadge.mint(await signers[0].getAddress(),1);
-
-        await Host.setFeatures(0, [
-          ["HEAD_SLOT", remoteHead.address, 0],
-          ["HAND_SLOT", remoteHand.address, 0],
-          ["BODY_SLOT", remoteBody.address, 0],
-          ["BADGE_SLOT", remoteBadge.address, 0],
-        ]);
-
-        let featureList = await Host.getFeatures(0);
-        expect(featureList).to.equal(
-          '{"HEAD_SLOT":["' +
+        let featureData = await Host.getFeatures(0);
+        expect(featureData).to.deep.equal(
+          '{0:["' +
+            headSlotHash +
+            '","' +
             remoteHead.address.toLowerCase() +
-            '",0],"HAND_SLOT":["' +
-            remoteHand.address.toLowerCase() +
-            '",0],"BODY_SLOT":["' +
-            remoteBody.address.toLowerCase() +
-            '",0],"BADGE_SLOT":["' +
-            remoteBadge.address.toLowerCase() +
-            '",0]}'
+            '",0,1,2,1,1],' +
+            '1:["' +
+            faceSlotHash +
+            '","' +
+            remoteFace.address.toLowerCase() +
+            '",0,2,3,2,2],' +
+            '2:["' +
+            badge1SlotHash +
+            '","' +
+            remoteBadge1.address.toLowerCase() +
+            '",0,3,4,3,3],' +
+            '3:["' +
+            badge2SlotHash +
+            '","' +
+            remoteBadge2.address.toLowerCase() +
+            '",0,4,5,4,4]}'
         );
       });
     });

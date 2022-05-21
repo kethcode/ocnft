@@ -1,0 +1,109 @@
+.App {
+  height: 100vh;
+  text-align: center;
+  vertical-align: center;
+}
+
+.nav-container {
+  padding-top: 20px;
+  text-align: center;
+  vertical-align: center;
+}
+
+.nav {
+  margin: 0;
+  font-size: 40px;
+  font-weight: bold;
+  color: #ff0000;
+}
+
+.nav.li {
+  display: inline;
+  padding-right: 42px;
+  font-size: 20px;
+  font-weight: normal;
+  color: #000000;
+}
+
+.contextText {
+  text-align: left;
+}
+
+.image-space-wrapper {
+
+}
+
+.image-space {
+
+}
+
+.image {
+
+}
+
+.header-container {
+  padding-top: 20px;
+}
+
+.header {
+  margin: 0;
+  font-size: 40px;
+  font-weight: bold;
+  color: #ff0000;
+}
+
+.content-container {
+  padding-top: 20px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  text-align: left;
+}
+
+.connect-wallet-container {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  max-width: 200px;
+}
+
+.cta-button {
+  height: 45px;
+  border: 0;
+  width: auto;
+  padding-left: 40px;
+  padding-right: 40px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  color: black;
+}
+
+.connect-wallet-button {
+  background-image: linear-gradient(
+    to right,
+    #ffffff 0%,
+    #ff8888 21%,
+    #ff4444 52%,
+    #ff2222 78%,
+    #ff0000 100%
+  );
+  background-size: 200% 200%;
+  animation: gradient-animation 4s ease infinite;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 30px;
+}
+
+.footer {
+  color: black;
+  font-size: 16px;
+}

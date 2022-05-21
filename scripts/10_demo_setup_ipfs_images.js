@@ -14,10 +14,19 @@ const path_contract_addresses = path.resolve(
   `../data/contract_addresses.json`
 );
 
+const ipfs_gateway = "https://kethic.mypinata.cloud/ipfs/";
+const hostBaseURI = "http://45.77.213.147:4200/";
+const externalURI = "https://localhost:4201/";
+
 const path_ipfshash_data = path.resolve(__dirname, `../data/ipfs_cids.json`);
 const path_ipfshash_images_badge = path.resolve(__dirname, `../ipfs/badge/`);
 const path_ipfshash_images_face = path.resolve(__dirname, `../ipfs/face/`);
 const path_ipfshash_images_head = path.resolve(__dirname, `../ipfs/head/`);
+const path_ipfshash_images_base = path.resolve(__dirname, `../ipfs/base/`);
+const path_ipfshash_images_background = path.resolve(
+  __dirname,
+  `../ipfs/background/`
+);
 
 const options_images_badge = {
   pinataMetadata: {
@@ -55,39 +64,81 @@ const options_images_head = {
   },
 };
 
+const options_images_base = {
+  pinataMetadata: {
+    name: "ocnft base",
+    keyvalues: {
+      lastUpdated: Date(),
+    },
+  },
+  pinataOptions: {
+    cidVersion: 0,
+  },
+};
+
+const options_images_background = {
+  pinataMetadata: {
+    name: "ocnft background",
+    keyvalues: {
+      lastUpdated: Date(),
+    },
+  },
+  pinataOptions: {
+    cidVersion: 0,
+  },
+};
+
 const main = async () => {
   pinata.testAuthentication().then((auth) => {
     console.log(auth);
 
     let cidData = {};
 
-    // pin badges
+    // pin base
     pinata
-      .pinFromFS(path_ipfshash_images_badge, options_images_badge)
+      .pinFromFS(path_ipfshash_images_base, options_images_base)
       .then((iResult) => {
         console.log(iResult);
-        cidData["IpfsHash_badge"] = iResult["IpfsHash"];
+        cidData["IpfsHash_base"] = iResult["IpfsHash"];
 
-        // pin faces
+        // pin ctzn
         pinata
-          .pinFromFS(path_ipfshash_images_face, options_images_face)
+          .pinFromFS(path_ipfshash_images_background, options_images_background)
           .then((iResult) => {
             console.log(iResult);
-            cidData["IpfsHash_face"] = iResult["IpfsHash"];
+            cidData["IpfsHash_background"] = iResult["IpfsHash"];
 
-            // pin hands
+            // pin badges
             pinata
-              .pinFromFS(path_ipfshash_images_head, options_images_head)
+              .pinFromFS(path_ipfshash_images_badge, options_images_badge)
               .then((iResult) => {
                 console.log(iResult);
-                cidData["IpfsHash_head"] = iResult["IpfsHash"];
+                cidData["IpfsHash_badge"] = iResult["IpfsHash"];
 
-                // save the cids
-                fs.writeFileSync(
-                  path_ipfshash_data,
-                  JSON.stringify(cidData),
-                  { flag: "w+" }
-                );
+                // pin faces
+                pinata
+                  .pinFromFS(path_ipfshash_images_face, options_images_face)
+                  .then((iResult) => {
+                    console.log(iResult);
+                    cidData["IpfsHash_face"] = iResult["IpfsHash"];
+
+                    // pin hands
+                    pinata
+                      .pinFromFS(path_ipfshash_images_head, options_images_head)
+                      .then((iResult) => {
+                        console.log(iResult);
+                        cidData["IpfsHash_head"] = iResult["IpfsHash"];
+
+                        // save the cids
+                        fs.writeFileSync(
+                          path_ipfshash_data,
+                          JSON.stringify(cidData),
+                          {
+                            flag: "w+",
+                          }
+                        );
+                      });
+                  });
               });
           });
       });

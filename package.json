@@ -15,7 +15,8 @@
     "deploy_rinkeby": "hardhat run scripts/01_deploy.ts --network rinkeby",
     "verify_rinkeby": "hardhat run scripts/02_verify.ts --network rinkeby",
     "demo_setup_ipfs": "hardhat run scripts/10_demo_setup_ipfs_images.js --network rinkeby",
-    "demo_setup_features": "hardhat run scripts/11_demo_setup_features.ts --network rinkeby"
+    "demo_setup_features": "hardhat run scripts/11_demo_setup_features.ts --network rinkeby",
+	"demo_update_features": "hardhat run scripts/12_demo_change_features.ts --network rinkeby"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",

@@ -2,20 +2,20 @@ import React, { useState, useEffect } from "react";
 
 import "./styles.css";
 
-import host from "../abi/host.json";
+import Composable from "../abi/Composable.json";
 
-import { CTZN_ADDRESS, AVATAR_ADDRESS, BACK_ADDRESS } from "../constants";
+import { TOP_ADDRESS, AVATAR_ADDRESS, BACK_ADDRESS } from "../constants";
 
 import getOwnedTokens from "../components/getOwnedTokens";
 import getTokenImage from "../components/getTokenImage";
 import getComposableFeatureData from "../components/getComposableFeatureData";
 
-const Citizen = () => {
+const Top = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentAccount, setCurrentAccount] = useState(null);
 
-  const [citizenTokenID, setCitizenTokenID] = useState(null);
-  const [citizenImageURI, setCitizenImageURI] = useState(null);
+  const [topTokenID, settopTokenID] = useState(null);
+  const [topImageURI, settopImageURI] = useState(null);
   const [backgroundTokenID, setBackgroundTokenID] = useState(null);
   const [backgroundImageURI, setBackgroundImageURI] = useState(null);
   const [avatarTokenID, setAvatarTokenID] = useState(null);
@@ -75,25 +75,25 @@ const Citizen = () => {
 
   useEffect(() => {
     if (currentAccount != null) {
-      if (citizenTokenID == null) {
-        getOwnedTokens(currentAccount, CTZN_ADDRESS, host.abi).then(
-          (citizenTokenList) => {
+      if (topTokenID == null) {
+        getOwnedTokens(currentAccount, TOP_ADDRESS, Composable.abi).then(
+          (topTokenList) => {
             // for now, i'm going to use owned first token by default
-            if (citizenTokenList) {
-              setCitizenTokenID(citizenTokenList[0]);
+            if (topTokenList) {
+              settopTokenID(topTokenList[0]);
             }
           }
         );
-      } else if (citizenImageURI == null) {
-        console.log("citizenTokenID:", citizenTokenID);
-        getTokenImage(citizenTokenID, CTZN_ADDRESS, host.abi).then(
+      } else if (topImageURI == null) {
+        console.log("topTokenID:", topTokenID);
+        getTokenImage(topTokenID, TOP_ADDRESS, Composable.abi).then(
           (imageURI) => {
-            setCitizenImageURI(imageURI);
+            settopImageURI(imageURI);
             setIsLoading(false);
           }
         );
       } else {
-        getComposableFeatureData(citizenTokenID, CTZN_ADDRESS, host.abi).then(
+        getComposableFeatureData(topTokenID, TOP_ADDRESS, Composable.abi).then(
           (featureListJSON) => {
             console.log(featureListJSON);
 
@@ -116,7 +116,7 @@ const Citizen = () => {
         );
       }
     }
-  }, [currentAccount, citizenTokenID, citizenImageURI, avatarTokenID]);
+  }, [currentAccount, topTokenID, topImageURI, avatarTokenID]);
 
   const renderContent = () => {
     if (!currentAccount) {
@@ -131,30 +131,28 @@ const Citizen = () => {
         </div>
       );
     } else {
-      if (citizenTokenID != null) {
+      if (topTokenID != null) {
         return (
           <div className="content-container ">
-            Citizen Card
+            Top Card
             <br />
             <div className="image-space-wrapper">
-              <img className="image-space" src={citizenImageURI} />
+              <img className="image-space" src={topImageURI} />
             </div>
             <br />
             <div className="content">
               <p>
-                Citizen Token:{" "}
-                {citizenTokenID != null ? citizenTokenID : "Not Found"}
+                Top Token: {topTokenID != null ? topTokenID : "Not Found"}
                 <br />
-                Citizen Contract:{" "}
-                {CTZN_ADDRESS != null ? CTZN_ADDRESS : "Not Found"}
+                Top Contract: {TOP_ADDRESS != null ? TOP_ADDRESS : "Not Found"}
                 <br />
-                Citizen ImageURI:{" "}
+                Top ImageURI:{" "}
                 <a
-                  href={citizenImageURI != null ? citizenImageURI : "#"}
+                  href={topImageURI != null ? topImageURI : "#"}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {citizenImageURI != null ? citizenImageURI : "Not Found"}
+                  {topImageURI != null ? topImageURI : "Not Found"}
                 </a>
                 <br />
                 <br />
@@ -195,7 +193,7 @@ const Citizen = () => {
           </div>
         );
       } else {
-        // return <div>No Citizen Token Found</div>;
+        // return <div>No top Token Found</div>;
       }
     }
   };
@@ -207,4 +205,4 @@ const Citizen = () => {
   );
 };
 
-export default Citizen;
+export default Top;

@@ -6,10 +6,13 @@ const Layout = () => {
     <>
       <nav>
         <div className="nav-container">
-          <div className="nav">OCNFT Demo</div>
+          <div className="nav">Composable NFT Demo</div>
           <ul>
             <li className="nav li">
-              <Link to="/">Citizen</Link>
+              <Link to="/">Home</Link>
+            </li>
+            <li className="nav li">
+              <Link to="/top">Top</Link>
             </li>
             <li className="nav li">
               <Link to="/avatar">Avatar</Link>

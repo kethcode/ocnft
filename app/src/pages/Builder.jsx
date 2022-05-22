@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./styles.css";
 
 import { ethers } from "ethers";
-import host from "../abi/host.json";
-import remote from "../abi/remote.json";
+import Composable from "../abi/Composable.json";
+import NFT_721E from "../abi/NFT_721E.json";
 
 import {
   AVATAR_ADDRESS,
@@ -133,7 +133,7 @@ const Builder = () => {
   useEffect(() => {
     if (currentAccount != null) {
       if (avatarTokenID == null) {
-        getOwnedTokens(currentAccount, AVATAR_ADDRESS, host.abi).then(
+        getOwnedTokens(currentAccount, AVATAR_ADDRESS, Composable.abi).then(
           (avatarTokenList) => {
             // for now, i'm going to use owned first token by default
             if (avatarTokenList) {
@@ -143,14 +143,14 @@ const Builder = () => {
         );
       } else if (avatarImageURI == null) {
         console.log("avatarTokenID:", avatarTokenID);
-        getTokenImage(avatarTokenID, AVATAR_ADDRESS, host.abi).then(
+        getTokenImage(avatarTokenID, AVATAR_ADDRESS, Composable.abi).then(
           (imageURI) => {
             setAvatarImageURI(imageURI);
             setIsLoading(false);
           }
         );
       } else {
-        getComposableFeatureData(avatarTokenID, AVATAR_ADDRESS, host.abi).then(
+        getComposableFeatureData(avatarTokenID, AVATAR_ADDRESS, Composable.abi).then(
           (featureListJSON) => {
             console.log(featureListJSON);
 
@@ -231,10 +231,10 @@ const Builder = () => {
   useEffect(() => {
     // lets go get all the head token images
     if (headTokenID != null) {
-      getOwnedTokens(currentAccount, HEAD_ADDRESS, remote.abi).then(
+      getOwnedTokens(currentAccount, HEAD_ADDRESS, NFT_721E.abi).then(
         (headTokenList) => {
           if (headTokenList) {
-            getTokenImageArray(headTokenList, HEAD_ADDRESS, remote.abi).then(
+            getTokenImageArray(headTokenList, HEAD_ADDRESS, NFT_721E.abi).then(
               (imageList) => {
                 setHeadSelectorImageList(imageList);
                 setHeadSelectorKey(headTokenID);
@@ -278,7 +278,7 @@ const Builder = () => {
       HEAD_ADDRESS,
       headSelectorKey,
       AVATAR_ADDRESS,
-      host.abi
+      Composable.abi
     );
   };
 
@@ -317,10 +317,10 @@ const Builder = () => {
   useEffect(() => {
     // lets go get all the face token images
     if (faceTokenID != null) {
-      getOwnedTokens(currentAccount, FACE_ADDRESS, remote.abi).then(
+      getOwnedTokens(currentAccount, FACE_ADDRESS, NFT_721E.abi).then(
         (faceTokenList) => {
           if (faceTokenList) {
-            getTokenImageArray(faceTokenList, FACE_ADDRESS, remote.abi).then(
+            getTokenImageArray(faceTokenList, FACE_ADDRESS, NFT_721E.abi).then(
               (imageList) => {
                 setFaceSelectorImageList(imageList);
                 setFaceSelectorKey(faceTokenID);
@@ -364,7 +364,7 @@ const Builder = () => {
       FACE_ADDRESS,
       faceSelectorKey,
       AVATAR_ADDRESS,
-      host.abi
+      Composable.abi
     );
   };
 
@@ -403,10 +403,10 @@ const Builder = () => {
   useEffect(() => {
     // lets go get all the badge1 token images
     if (badge1TokenID != null) {
-      getOwnedTokens(currentAccount, BADGE_ADDRESS, remote.abi).then(
+      getOwnedTokens(currentAccount, BADGE_ADDRESS, NFT_721E.abi).then(
         (badge1TokenList) => {
           if (badge1TokenList) {
-            getTokenImageArray(badge1TokenList, BADGE_ADDRESS, remote.abi).then(
+            getTokenImageArray(badge1TokenList, BADGE_ADDRESS, NFT_721E.abi).then(
               (imageList) => {
                 setBadge1SelectorImageList(imageList);
                 setBadge1SelectorKey(badge1TokenID);
@@ -454,7 +454,7 @@ const Builder = () => {
       BADGE_ADDRESS,
       badge1SelectorKey,
       AVATAR_ADDRESS,
-      host.abi
+      Composable.abi
     );
   };
 
@@ -493,10 +493,10 @@ const Builder = () => {
   useEffect(() => {
     // lets go get all the badge2 token images
     if (badge2TokenID != null) {
-      getOwnedTokens(currentAccount, BADGE_ADDRESS, remote.abi).then(
+      getOwnedTokens(currentAccount, BADGE_ADDRESS, NFT_721E.abi).then(
         (badge2TokenList) => {
           if (badge2TokenList) {
-            getTokenImageArray(badge2TokenList, BADGE_ADDRESS, remote.abi).then(
+            getTokenImageArray(badge2TokenList, BADGE_ADDRESS, NFT_721E.abi).then(
               (imageList) => {
                 setBadge2SelectorImageList(imageList);
                 setBadge2SelectorKey(badge2TokenID);
@@ -544,7 +544,7 @@ const Builder = () => {
       BADGE_ADDRESS,
       badge2SelectorKey,
       AVATAR_ADDRESS,
-      host.abi
+      Composable.abi
     );
   };
 
@@ -577,37 +577,20 @@ const Builder = () => {
     }
   };
 
+  //    * @param inputData [_featureHash, _remoteContractAddr, _remoteTokenId][]
   const saveAll = () => {
     configureFeatures(
-      headSlotHash,
-      HEAD_ADDRESS,
-      headSelectorKey,
       AVATAR_ADDRESS,
-      host.abi
+      avatarTokenID, [
+        [headSlotHash, HEAD_ADDRESS, headSelectorKey],
+        [faceSlotHash, FACE_ADDRESS, faceSelectorKey],
+        [badge1SlotHash, BADGE_ADDRESS, badge1SelectorKey],
+        [badge2SlotHash, BADGE_ADDRESS, badge2SelectorKey],
+
+      ]
+
     );
-    configureFeatures(
-      faceSlotHash,
-      FACE_ADDRESS,
-      faceSelectorKey,
-      AVATAR_ADDRESS,
-      host.abi
-    );
-    configureFeatures(
-      badge1SlotHash,
-      BADGE_ADDRESS,
-      badge1SelectorKey,
-      AVATAR_ADDRESS,
-      host.abi
-    );
-    configureFeatures(
-      badge2SlotHash,
-      BADGE_ADDRESS,
-      badge2SelectorKey,
-      AVATAR_ADDRESS,
-      host.abi
-    );
-    //configureFeaturesAll(AVATAR_ADDRESS,host.abi,[[headSlotHash,HEAD_ADDRESS,headSelectorKey],[faceSlotHash,FACE_ADDRESS,faceSelectorKey],[badge1SlotHash,BADGE_ADDRESS,badge1SelectorKey],[badge2SlotHash,BADGE_ADDRESS,badge2SelectorKey]]);
-  };
+};
 
   return (
     <div className="App">

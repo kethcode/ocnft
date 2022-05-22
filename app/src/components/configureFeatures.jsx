@@ -1,32 +1,24 @@
-// tx = await ctzn.configureFeatures(0, [
-//   [backgroundSlotHash, remoteBackground.address, 0],
-//   [avatarSlotHash, host.address, 0],
-// ]);
-// await tx.wait();
-
 import { ethers } from "ethers";
 
+import Composable from "../abi/Composable.json";
+
 const configureFeatures = async (
-  feature_hash,
-  feature_addr,
-  feature_token,
-  con_addr,
-  con_abi
+  composable_addr,
+  composable_tokenId,
+  featureData
 ) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
-  const contract = new ethers.Contract(con_addr, con_abi, signer);
+  const contract = new ethers.Contract(composable_addr, Composable.abi, signer);
 
   try {
-    let tx = await contract.configureFeatures(0, [
-      [feature_hash, feature_addr, feature_token],
-    ]);
+    let tx = await contract.configureFeatures(composable_tokenId, featureData);
     await tx.wait();
     console.log(
       "configureFeatures:",
-      feature_hash,
-      feature_addr,
-      feature_token
+      composable_addr,
+      composable_tokenId,
+      featureData
     );
   } catch (e) {
     console.log("configureFeatures:", e);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import "./styles.css";
 
-import host from "../abi/host.json";
+import Composable from "../abi/Composable.json";
 
 import {
   AVATAR_ADDRESS,
@@ -90,7 +90,7 @@ const Avatar = () => {
   useEffect(() => {
     if (currentAccount != null) {
       if (avatarTokenID == null) {
-        getOwnedTokens(currentAccount, AVATAR_ADDRESS, host.abi).then(
+        getOwnedTokens(currentAccount, AVATAR_ADDRESS, Composable.abi).then(
           (avatarTokenList) => {
             // for now, i'm going to use owned first token by default
             if (avatarTokenList) {
@@ -100,14 +100,14 @@ const Avatar = () => {
         );
       } else if (avatarImageURI == null) {
         console.log("avatarTokenID:", avatarTokenID);
-        getTokenImage(avatarTokenID, AVATAR_ADDRESS, host.abi).then(
+        getTokenImage(avatarTokenID, AVATAR_ADDRESS, Composable.abi).then(
           (imageURI) => {
             setAvatarImageURI(imageURI);
             setIsLoading(false);
           }
         );
       } else {
-        getComposableFeatureData(avatarTokenID, AVATAR_ADDRESS, host.abi).then(
+        getComposableFeatureData(avatarTokenID, AVATAR_ADDRESS, Composable.abi).then(
           (featureListJSON) => {
             console.log(featureListJSON);
 
@@ -284,7 +284,7 @@ const Avatar = () => {
           </div>
         );
       } else {
-        // return <div>No Citizen Token Found</div>;
+        // return <div>No Top Token Found</div>;
       }
     }
   };

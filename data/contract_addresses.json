@@ -1,9 +1,9 @@
 {
-  "ctznAddress": "0x9f0210f4cDD2eB572dEf32e6683Fb3c19CED2Bbb",
-  "hostAddress": "0x50B5A68403c7480C5621CB696C7b5517eb33ae60",
-  "remoteBackgroundAddress": "0x848aD4e31a918B45008d454AA97235495b987c1b",
-  "remoteBaseAddress": "0x06411Ac1981a80f852b991815B3De7F2cEa37eE9",
-  "remoteHeadAddress": "0xec13A97B533a913fcF51e2Af1EaC2406948F1b0f",
-  "remoteFaceAddress": "0x2f3C9934035fc1139B69c0eEA6d3761C7E23FFBb",
-  "remoteBadgeAddress": "0xB3575cF8D85F6C9C15E4d6d34bdc1EB4C3058196"
+  "topAddress": "0x4f63A9Dd37EF46002427BD2e31eD55Dc01b26aF1",
+  "avatarAddress": "0xFcDaE05B934B6a176d926A7CACD890742bBd1B38",
+  "remoteBackgroundAddress": "0xD0370b33158f0F1F762aa247fa9002D42De0E3bB",
+  "remoteBaseAddress": "0x489da2198b7903285d190FD98Ba40dac9905A759",
+  "remoteHeadAddress": "0x7C18E36cece17a93A7673745824e00f3F0d26B13",
+  "remoteFaceAddress": "0x910f44BdbB6dE6Fc4479D0Db632eC8614e71882a",
+  "remoteBadgeAddress": "0xB5018e93A4085144E4B3673942b6D2503Eacf8eb"
 }

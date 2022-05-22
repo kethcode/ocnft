@@ -20,7 +20,7 @@ import {
   HEAD_ADDRESS,
   FACE_ADDRESS,
   BADGE_ADDRESS,
-  ALCHEMY_KEY_RINKEBY,
+  QUICKNODE_KEY_RINKEBY,
 } from "./constants";
 
 import getOwnedTokens from "./components/getOwnedTokens";

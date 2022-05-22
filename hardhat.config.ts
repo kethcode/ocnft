@@ -26,7 +26,7 @@ const config: HardhatUserConfig = {
   },
   networks: {
     rinkeby: {
-      url: process.env.ALCHEMY_KEY_RINKEBY,
+      url: process.env.QUICKNODE_KEY_RINKEBY,
       accounts:
         process.env.PRIVATE_KEY_RINKEBY !== undefined
           ? [process.env.PRIVATE_KEY_RINKEBY]

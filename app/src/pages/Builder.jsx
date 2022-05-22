@@ -19,7 +19,6 @@ import getTokenImageArray from "../components/getTokenImageArray";
 import getComposableFeatureData from "../components/getComposableFeatureData";
 import configureFeatures from "../components/configureFeatures";
 
-
 const headSlotHash = ethers.utils.keccak256(
   ethers.utils.toUtf8Bytes("HEAD_SLOT")
 );
@@ -35,7 +34,6 @@ const badge1SlotHash = ethers.utils.keccak256(
 const badge2SlotHash = ethers.utils.keccak256(
   ethers.utils.toUtf8Bytes("BADGE2_SLOT")
 );
-
 
 const Builder = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,23 +57,26 @@ const Builder = () => {
   const [headSelectorReady, setHeadSelectorReady] = useState(false);
   const [headSelectorKey, setHeadSelectorKey] = useState(false);
   const [headSelectorImageList, setHeadSelectorImageList] = useState(false);
-  const [headSelectorImageDisplay, setHeadSelectorImageDisplay] = useState(null);
+  const [headSelectorImageDisplay, setHeadSelectorImageDisplay] =
+    useState(null);
 
   const [faceSelectorReady, setFaceSelectorReady] = useState(false);
   const [faceSelectorKey, setFaceSelectorKey] = useState(false);
   const [faceSelectorImageList, setFaceSelectorImageList] = useState(false);
-  const [faceSelectorImageDisplay, setFaceSelectorImageDisplay] = useState(null);
+  const [faceSelectorImageDisplay, setFaceSelectorImageDisplay] =
+    useState(null);
 
   const [badge1SelectorReady, setBadge1SelectorReady] = useState(false);
   const [badge1SelectorKey, setBadge1SelectorKey] = useState(false);
   const [badge1SelectorImageList, setBadge1SelectorImageList] = useState(false);
-  const [badge1SelectorImageDisplay, setBadge1SelectorImageDisplay] = useState(null);
+  const [badge1SelectorImageDisplay, setBadge1SelectorImageDisplay] =
+    useState(null);
 
   const [badge2SelectorReady, setBadge2SelectorReady] = useState(false);
   const [badge2SelectorKey, setBadge2SelectorKey] = useState(false);
   const [badge2SelectorImageList, setBadge2SelectorImageList] = useState(false);
-  const [badge2SelectorImageDisplay, setBadge2SelectorImageDisplay] = useState(null);
-
+  const [badge2SelectorImageDisplay, setBadge2SelectorImageDisplay] =
+    useState(null);
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -223,7 +224,6 @@ const Builder = () => {
     }
   };
 
-
   /// ------------------------------------------------------------------------
   /// HEAD
   /// ------------------------------------------------------------------------
@@ -272,8 +272,14 @@ const Builder = () => {
   };
 
   const saveHead = () => {
-    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi) 
-    configureFeatures(headSlotHash,HEAD_ADDRESS,headSelectorKey,AVATAR_ADDRESS,host.abi);
+    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi)
+    configureFeatures(
+      headSlotHash,
+      HEAD_ADDRESS,
+      headSelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
   };
 
   useEffect(() => {
@@ -293,7 +299,7 @@ const Builder = () => {
           >
             <button onClick={prevHead}>Prev</button>
             <div className="image-space">
-            <img className="image" src={headSelectorImageDisplay}></img>
+              <img className="image" src={headSelectorImageDisplay}></img>
             </div>
             <button onClick={nextHead}>Next</button>
             <button onClick={saveHead}>Save</button>
@@ -304,8 +310,6 @@ const Builder = () => {
       return <div className="content-container ">Loading Headware...</div>;
     }
   };
-
-
 
   /// ------------------------------------------------------------------------
   /// FACE
@@ -331,7 +335,6 @@ const Builder = () => {
     // }
   }, [faceTokenID]);
 
-
   const prevFace = () => {
     console.log("faceSelectorKey: ", faceSelectorKey);
     let keyIndex = Object.keys(faceSelectorImageList).indexOf(faceSelectorKey);
@@ -355,8 +358,14 @@ const Builder = () => {
   };
 
   const saveFace = () => {
-    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi) 
-    configureFeatures(faceSlotHash,FACE_ADDRESS,faceSelectorKey,AVATAR_ADDRESS,host.abi);
+    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi)
+    configureFeatures(
+      faceSlotHash,
+      FACE_ADDRESS,
+      faceSelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
   };
 
   useEffect(() => {
@@ -376,7 +385,7 @@ const Builder = () => {
           >
             <button onClick={prevFace}>Prev</button>
             <div className="image-space">
-            <img className="image" src={faceSelectorImageDisplay}></img>
+              <img className="image" src={faceSelectorImageDisplay}></img>
             </div>
             <button onClick={nextFace}>Next</button>
             <button onClick={saveFace}>Save</button>
@@ -412,10 +421,11 @@ const Builder = () => {
     // }
   }, [badge1TokenID]);
 
-
   const prevBadge1 = () => {
     console.log("badge1SelectorKey: ", badge1SelectorKey);
-    let keyIndex = Object.keys(badge1SelectorImageList).indexOf(badge1SelectorKey);
+    let keyIndex = Object.keys(badge1SelectorImageList).indexOf(
+      badge1SelectorKey
+    );
     if (keyIndex - 1 < 0) {
       keyIndex = Object.keys(badge1SelectorImageList).length - 1;
     } else {
@@ -426,7 +436,9 @@ const Builder = () => {
 
   const nextBadge1 = () => {
     console.log("badge1SelectorKey: ", badge1SelectorKey);
-    let keyIndex = Object.keys(badge1SelectorImageList).indexOf(badge1SelectorKey);
+    let keyIndex = Object.keys(badge1SelectorImageList).indexOf(
+      badge1SelectorKey
+    );
     if (keyIndex + 1 > Object.keys(badge1SelectorImageList).length - 1) {
       keyIndex = 0;
     } else {
@@ -436,8 +448,14 @@ const Builder = () => {
   };
 
   const saveBadge1 = () => {
-    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi) 
-    configureFeatures(badge1SlotHash,BADGE_ADDRESS,badge1SelectorKey,AVATAR_ADDRESS,host.abi);
+    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi)
+    configureFeatures(
+      badge1SlotHash,
+      BADGE_ADDRESS,
+      badge1SelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
   };
 
   useEffect(() => {
@@ -457,7 +475,7 @@ const Builder = () => {
           >
             <button onClick={prevBadge1}>Prev</button>
             <div className="image-space">
-            <img className="image" src={badge1SelectorImageDisplay}></img>
+              <img className="image" src={badge1SelectorImageDisplay}></img>
             </div>
             <button onClick={nextBadge1}>Next</button>
             <button onClick={saveBadge1}>Save</button>
@@ -493,10 +511,11 @@ const Builder = () => {
     // }
   }, [badge2TokenID]);
 
-
   const prevBadge2 = () => {
     console.log("badge2SelectorKey: ", badge2SelectorKey);
-    let keyIndex = Object.keys(badge2SelectorImageList).indexOf(badge2SelectorKey);
+    let keyIndex = Object.keys(badge2SelectorImageList).indexOf(
+      badge2SelectorKey
+    );
     if (keyIndex - 1 < 0) {
       keyIndex = Object.keys(badge2SelectorImageList).length - 1;
     } else {
@@ -507,7 +526,9 @@ const Builder = () => {
 
   const nextBadge2 = () => {
     console.log("badge2SelectorKey: ", badge2SelectorKey);
-    let keyIndex = Object.keys(badge2SelectorImageList).indexOf(badge2SelectorKey);
+    let keyIndex = Object.keys(badge2SelectorImageList).indexOf(
+      badge2SelectorKey
+    );
     if (keyIndex + 1 > Object.keys(badge2SelectorImageList).length - 1) {
       keyIndex = 0;
     } else {
@@ -517,8 +538,14 @@ const Builder = () => {
   };
 
   const saveBadge2 = () => {
-    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi) 
-    configureFeatures(badge2SlotHash,BADGE_ADDRESS,badge2SelectorKey,AVATAR_ADDRESS,host.abi);
+    //const configureFeatures = async (feature_hash,feature_addr,feature_token,con_addr,con_abi)
+    configureFeatures(
+      badge2SlotHash,
+      BADGE_ADDRESS,
+      badge2SelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
   };
 
   useEffect(() => {
@@ -538,7 +565,7 @@ const Builder = () => {
           >
             <button onClick={prevBadge2}>Prev</button>
             <div className="image-space">
-            <img className="image" src={badge2SelectorImageDisplay}></img>
+              <img className="image" src={badge2SelectorImageDisplay}></img>
             </div>
             <button onClick={nextBadge2}>Next</button>
             <button onClick={saveBadge2}>Save</button>
@@ -551,14 +578,36 @@ const Builder = () => {
   };
 
   const saveAll = () => {
-    configureFeatures(headSlotHash,HEAD_ADDRESS,headSelectorKey,AVATAR_ADDRESS,host.abi);
-    configureFeatures(faceSlotHash,FACE_ADDRESS,faceSelectorKey,AVATAR_ADDRESS,host.abi);
-    configureFeatures(badge1SlotHash,BADGE_ADDRESS,badge1SelectorKey,AVATAR_ADDRESS,host.abi);
-    configureFeatures(badge2SlotHash,BADGE_ADDRESS,badge2SelectorKey,AVATAR_ADDRESS,host.abi);
+    configureFeatures(
+      headSlotHash,
+      HEAD_ADDRESS,
+      headSelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
+    configureFeatures(
+      faceSlotHash,
+      FACE_ADDRESS,
+      faceSelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
+    configureFeatures(
+      badge1SlotHash,
+      BADGE_ADDRESS,
+      badge1SelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
+    configureFeatures(
+      badge2SlotHash,
+      BADGE_ADDRESS,
+      badge2SelectorKey,
+      AVATAR_ADDRESS,
+      host.abi
+    );
     //configureFeaturesAll(AVATAR_ADDRESS,host.abi,[[headSlotHash,HEAD_ADDRESS,headSelectorKey],[faceSlotHash,FACE_ADDRESS,faceSelectorKey],[badge1SlotHash,BADGE_ADDRESS,badge1SelectorKey],[badge2SlotHash,BADGE_ADDRESS,badge2SelectorKey]]);
   };
-
-
 
   return (
     <div className="App">
@@ -567,7 +616,9 @@ const Builder = () => {
       <div className="content-container">{faceSelector()}</div>
       <div className="content-container">{badge1Selector()}</div>
       <div className="content-container">{badge2Selector()}</div>
-      <div className="content-container"><button onClick={saveAll}>Save All</button></div>
+      <div className="content-container">
+        <button onClick={saveAll}>Save All</button>
+      </div>
     </div>
   );
 };

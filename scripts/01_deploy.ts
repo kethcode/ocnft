@@ -11,7 +11,7 @@ const path_contract_addresses = path.resolve(
 const path_ipfshash_data = path.resolve(__dirname, `../data/ipfs_cids.json`);
 
 const ipfs_gateway = "https://kethic.mypinata.cloud/ipfs/";
-const hostBaseURI = "http://45.77.213.147:4200/";
+const composeServerURI = "http://45.77.213.147:4200/";
 const externalURI = "https://localhost:4201/";
 
 async function main() {
@@ -31,40 +31,40 @@ async function main() {
   const remoteFaceBaseURI = ipfs_gateway + cid_face + "/";
   const remoteBadgeBaseURI = ipfs_gateway + cid_badge + "/";
 
-  const Host = await ethers.getContractFactory("host");
-  const Remote = await ethers.getContractFactory("remote");
+  const ComposableFactory = await ethers.getContractFactory("Composable");
+  const ERC721Factory = await ethers.getContractFactory("NFT_721E");
 
-  const ctzn = await Host.deploy(hostBaseURI, externalURI);
-  await ctzn.deployed();
-  console.log("Ctzn deployed to:       ", ctzn.address);
+  const top = await ComposableFactory.deploy(composeServerURI, externalURI);
+  await top.deployed();
+  console.log("Top deployed to:    ", top.address);
 
-  const host = await Host.deploy(hostBaseURI, externalURI);
-  await host.deployed();
-  console.log("Host deployed to:       ", host.address);
+  const avatar = await ComposableFactory.deploy(composeServerURI, externalURI);
+  await avatar.deployed();
+  console.log("Avatar deployed to: ", avatar.address);
 
-  const remoteBackground = await Remote.deploy(remoteBackgroundBaseURI, externalURI);
+  const remoteBackground = await ERC721Factory.deploy(remoteBackgroundBaseURI, externalURI);
   await remoteBackground.deployed();
-  console.log("remoteBackground deployed to: ", remoteBackground.address);
+  console.log("Back deployed to:   ", remoteBackground.address);
 
-  const remoteBase = await Remote.deploy(remoteBaseBaseURI, externalURI);
+  const remoteBase = await ERC721Factory.deploy(remoteBaseBaseURI, externalURI);
   await remoteBase.deployed();
-  console.log("remoteBase deployed to: ", remoteBase.address);
+  console.log("Base deployed to:   ", remoteBase.address);
 
-  const remoteHead = await Remote.deploy(remoteHeadBaseURI, externalURI);
+  const remoteHead = await ERC721Factory.deploy(remoteHeadBaseURI, externalURI);
   await remoteHead.deployed();
-  console.log("remoteHead deployed to: ", remoteHead.address);
+  console.log("Head deployed to:   ", remoteHead.address);
 
-  const remoteFace = await Remote.deploy(remoteFaceBaseURI, externalURI);
+  const remoteFace = await ERC721Factory.deploy(remoteFaceBaseURI, externalURI);
   await remoteFace.deployed();
-  console.log("remoteFace deployed to: ", remoteFace.address);
+  console.log("Face deployed to:   ", remoteFace.address);
 
-  const remoteBadge = await Remote.deploy(remoteBadgeBaseURI, externalURI);
+  const remoteBadge = await ERC721Factory.deploy(remoteBadgeBaseURI, externalURI);
   await remoteBadge.deployed();
-  console.log("remoteBadge deployed to:", remoteBadge.address);
+  console.log("Badge deployed to:  ", remoteBadge.address);
 
   let contractData = {
-    ctznAddress: ctzn.address,
-    hostAddress: host.address,
+    topAddress: top.address,
+    avatarAddress: avatar.address,
     remoteBackgroundAddress: remoteBackground.address,
     remoteBaseAddress: remoteBase.address,
     remoteHeadAddress: remoteHead.address,

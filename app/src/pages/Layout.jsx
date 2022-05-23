@@ -3,29 +3,27 @@ import "./styles.css";
 
 const Layout = () => {
   return (
-    <>
-      <nav>
-        <div className="nav-container">
-          <div className="nav">Composable NFT Demo</div>
+    <div class="app-container">
+      <nav className="header__container">
+        <nav className="desktop-header__container">
+          <section>
+            <Link class="desktop-header__header-link" to="/">Composable NFT Demo</Link>
+          
           <ul>
-            <li className="nav li">
-              <Link to="/">Home</Link>
-            </li>
-            <li className="nav li">
-              <Link to="/top">Top</Link>
-            </li>
-            <li className="nav li">
-              <Link to="/avatar">Avatar</Link>
-            </li>
-            <li className="nav li">
-              <Link to="/builder">Builder</Link>
-            </li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/top">Top</Link></li>
+            <li><Link to="/avatar">Avatar</Link></li>
+            <li><Link to="/builder">Builder</Link></li>
+
           </ul>
-        </div>
+          </section>
+          <section>
+          </section>
+        </nav>
       </nav>
 
       <Outlet />
-    </>
+    </div>
   );
 };
 

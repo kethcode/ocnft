@@ -150,50 +150,52 @@ const Builder = () => {
           }
         );
       } else {
-        getComposableFeatureData(avatarTokenID, AVATAR_ADDRESS, Composable.abi).then(
-          (featureListJSON) => {
-            console.log(featureListJSON);
+        getComposableFeatureData(
+          avatarTokenID,
+          AVATAR_ADDRESS,
+          Composable.abi
+        ).then((featureListJSON) => {
+          console.log(featureListJSON);
 
-            let badgeCount = 0;
+          let badgeCount = 0;
 
-            for (const key of Object.keys(featureListJSON)) {
-              if (
-                featureListJSON[key][1].toLowerCase() ===
-                BASE_ADDRESS.toLowerCase()
-              ) {
-                setBaseTokenID(featureListJSON[key][2]);
-                setBaseImageURI(featureListJSON[key][7]);
-              } else if (
-                featureListJSON[key][1].toLowerCase() ===
-                HEAD_ADDRESS.toLowerCase()
-              ) {
-                setHeadTokenID(featureListJSON[key][2]);
-                setHeadImageURI(featureListJSON[key][7]);
-              } else if (
-                featureListJSON[key][1].toLowerCase() ===
-                FACE_ADDRESS.toLowerCase()
-              ) {
-                setFaceTokenID(featureListJSON[key][2]);
-                setFaceImageURI(featureListJSON[key][7]);
-              } else if (
-                featureListJSON[key][1].toLowerCase() ===
-                BADGE_ADDRESS.toLowerCase()
-              ) {
-                switch (badgeCount) {
-                  case 0:
-                    setBadge1TokenID(featureListJSON[key][2]);
-                    setBadge1ImageURI(featureListJSON[key][7]);
-                    break;
-                  case 1:
-                    setBadge2TokenID(featureListJSON[key][2]);
-                    setBadge2ImageURI(featureListJSON[key][7]);
-                    break;
-                }
-                badgeCount++;
+          for (const key of Object.keys(featureListJSON)) {
+            if (
+              featureListJSON[key][1].toLowerCase() ===
+              BASE_ADDRESS.toLowerCase()
+            ) {
+              setBaseTokenID(featureListJSON[key][2]);
+              setBaseImageURI(featureListJSON[key][7]);
+            } else if (
+              featureListJSON[key][1].toLowerCase() ===
+              HEAD_ADDRESS.toLowerCase()
+            ) {
+              setHeadTokenID(featureListJSON[key][2]);
+              setHeadImageURI(featureListJSON[key][7]);
+            } else if (
+              featureListJSON[key][1].toLowerCase() ===
+              FACE_ADDRESS.toLowerCase()
+            ) {
+              setFaceTokenID(featureListJSON[key][2]);
+              setFaceImageURI(featureListJSON[key][7]);
+            } else if (
+              featureListJSON[key][1].toLowerCase() ===
+              BADGE_ADDRESS.toLowerCase()
+            ) {
+              switch (badgeCount) {
+                case 0:
+                  setBadge1TokenID(featureListJSON[key][2]);
+                  setBadge1ImageURI(featureListJSON[key][7]);
+                  break;
+                case 1:
+                  setBadge2TokenID(featureListJSON[key][2]);
+                  setBadge2ImageURI(featureListJSON[key][7]);
+                  break;
               }
+              badgeCount++;
             }
           }
-        );
+        });
       }
     }
   }, [
@@ -220,7 +222,20 @@ const Builder = () => {
         </div>
       );
     } else {
-      return <div className="content-container ">Builder</div>;
+      return (
+        <div>
+        <div class="transaction-flow__mode-types">Builder</div>
+        <div class="builder__container">
+          <div>
+            <button class="builder_commit_button" onClick={saveAll}>Commit All Changes</button>
+          </div>
+          <div class="builder__subcontainer">{headSelector()}</div>
+          <div class="builder__subcontainer">{faceSelector()}</div>
+          <div class="builder__subcontainer">{badge1Selector()}</div>
+          <div class="builder__subcontainer">{badge2Selector()}</div>
+        </div>
+        </div>
+      );
     }
   };
 
@@ -289,25 +304,22 @@ const Builder = () => {
   const headSelector = () => {
     if (headSelectorReady) {
       return (
-        <div className="content-container">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gridGap: 10,
-            }}
-          >
-            <button onClick={prevHead}>Prev</button>
-            <div className="image-space">
-              <img className="image" src={headSelectorImageDisplay}></img>
-            </div>
-            <button onClick={nextHead}>Next</button>
-            <button onClick={saveHead}>Save</button>
+        <div>
+          <div>Select Avatar Headware</div>
+          <div>
+            <img class="builder_image" src={headSelectorImageDisplay}></img>
           </div>
+          <div>
+            <button class="builder_selector_button" onClick={prevHead}>Prev</button>
+            <button class="builder_selector_button" onClick={nextHead}>Next</button>
+          </div>
+          {/* <div>
+          <button class="builder_commit_button" onClick={saveHead}>Commit Head</button>
+          </div> */}
         </div>
       );
     } else {
-      return <div className="content-container ">Loading Headware...</div>;
+      return <div>Loading Headware...</div>;
     }
   };
 
@@ -375,25 +387,22 @@ const Builder = () => {
   const faceSelector = () => {
     if (faceSelectorReady) {
       return (
-        <div className="content-container">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gridGap: 10,
-            }}
-          >
-            <button onClick={prevFace}>Prev</button>
-            <div className="image-space">
-              <img className="image" src={faceSelectorImageDisplay}></img>
-            </div>
-            <button onClick={nextFace}>Next</button>
-            <button onClick={saveFace}>Save</button>
+        <div>
+          <div>Select Avatar Face</div>
+          <div>
+            <img class="builder_image" src={faceSelectorImageDisplay}></img>
           </div>
+          <div>
+            <button class="builder_selector_button" onClick={prevFace}>Prev</button>
+            <button class="builder_selector_button" onClick={nextFace}>Next</button>
+          </div>
+          {/* <div>
+          <button class="builder_commit_button" onClick={saveFace}>Commit Face</button>
+          </div> */}
         </div>
       );
     } else {
-      return <div className="content-container ">Loading Faces...</div>;
+      return <div>Loading 'Faces'...</div>;
     }
   };
 
@@ -406,14 +415,16 @@ const Builder = () => {
       getOwnedTokens(currentAccount, BADGE_ADDRESS, NFT_721E.abi).then(
         (badge1TokenList) => {
           if (badge1TokenList) {
-            getTokenImageArray(badge1TokenList, BADGE_ADDRESS, NFT_721E.abi).then(
-              (imageList) => {
-                setBadge1SelectorImageList(imageList);
-                setBadge1SelectorKey(badge1TokenID);
-                setBadge1SelectorImageDisplay(imageList[badge1TokenID]);
-                setBadge1SelectorReady(true);
-              }
-            );
+            getTokenImageArray(
+              badge1TokenList,
+              BADGE_ADDRESS,
+              NFT_721E.abi
+            ).then((imageList) => {
+              setBadge1SelectorImageList(imageList);
+              setBadge1SelectorKey(badge1TokenID);
+              setBadge1SelectorImageDisplay(imageList[badge1TokenID]);
+              setBadge1SelectorReady(true);
+            });
           }
         }
       );
@@ -462,28 +473,50 @@ const Builder = () => {
     setBadge1SelectorImageDisplay(badge1SelectorImageList[badge1SelectorKey]);
   }, [badge1SelectorKey]);
 
+  // const badge1Selector = () => {
+  //   if (badge1SelectorReady) {
+  //     return (
+  //       <div className="content-container">
+  //         <div
+  //           style={{
+  //             display: "grid",
+  //             gridTemplateColumns: "repeat(4, 1fr)",
+  //             gridGap: 10,
+  //           }}
+  //         >
+  //           <button onClick={prevBadge1}>Prev</button>
+  //           <div className="image-space">
+  //             <img className="image" src={badge1SelectorImageDisplay}></img>
+  //           </div>
+  //           <button onClick={nextBadge1}>Next</button>
+  //           <button onClick={saveBadge1}>Save</button>
+  //         </div>
+  //       </div>
+  //     );
+  //   } else {
+  //     return <div className="content-container ">Loading Badges...</div>;
+  //   }
+  // };
+
   const badge1Selector = () => {
     if (badge1SelectorReady) {
       return (
-        <div className="content-container">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gridGap: 10,
-            }}
-          >
-            <button onClick={prevBadge1}>Prev</button>
-            <div className="image-space">
-              <img className="image" src={badge1SelectorImageDisplay}></img>
-            </div>
-            <button onClick={nextBadge1}>Next</button>
-            <button onClick={saveBadge1}>Save</button>
+        <div>
+          <div>Select Avatar Badge (Slot1)</div>
+          <div>
+            <img class="builder_image" src={badge1SelectorImageDisplay}></img>
           </div>
+          <div>
+            <button class="builder_selector_button" onClick={prevBadge1}>Prev</button>
+            <button class="builder_selector_button" onClick={nextBadge1}>Next</button>
+          </div>
+          {/* <div>
+          <button class="builder_commit_button" onClick={saveBadge1}>Commit Badge 1</button>
+          </div> */}
         </div>
       );
     } else {
-      return <div className="content-container ">Loading Badges...</div>;
+      return <div>Loading Badges...</div>;
     }
   };
 
@@ -496,14 +529,16 @@ const Builder = () => {
       getOwnedTokens(currentAccount, BADGE_ADDRESS, NFT_721E.abi).then(
         (badge2TokenList) => {
           if (badge2TokenList) {
-            getTokenImageArray(badge2TokenList, BADGE_ADDRESS, NFT_721E.abi).then(
-              (imageList) => {
-                setBadge2SelectorImageList(imageList);
-                setBadge2SelectorKey(badge2TokenID);
-                setBadge2SelectorImageDisplay(imageList[badge2TokenID]);
-                setBadge2SelectorReady(true);
-              }
-            );
+            getTokenImageArray(
+              badge2TokenList,
+              BADGE_ADDRESS,
+              NFT_721E.abi
+            ).then((imageList) => {
+              setBadge2SelectorImageList(imageList);
+              setBadge2SelectorKey(badge2TokenID);
+              setBadge2SelectorImageDisplay(imageList[badge2TokenID]);
+              setBadge2SelectorReady(true);
+            });
           }
         }
       );
@@ -552,56 +587,66 @@ const Builder = () => {
     setBadge2SelectorImageDisplay(badge2SelectorImageList[badge2SelectorKey]);
   }, [badge2SelectorKey]);
 
+  // const badge2Selector = () => {
+  //   if (badge2SelectorReady) {
+  //     return (
+  //       <div className="content-container">
+  //         <div
+  //           style={{
+  //             display: "grid",
+  //             gridTemplateColumns: "repeat(4, 1fr)",
+  //             gridGap: 10,
+  //           }}
+  //         >
+  //           <button onClick={prevBadge2}>Prev</button>
+  //           <div className="image-space">
+  //             <img className="image" src={badge2SelectorImageDisplay}></img>
+  //           </div>
+  //           <button onClick={nextBadge2}>Next</button>
+  //           <button onClick={saveBadge2}>Save</button>
+  //         </div>
+  //       </div>
+  //     );
+  //   } else {
+  //     return <div className="content-container ">Loading Badges...</div>;
+  //   }
+  // };
+
   const badge2Selector = () => {
     if (badge2SelectorReady) {
       return (
-        <div className="content-container">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gridGap: 10,
-            }}
-          >
-            <button onClick={prevBadge2}>Prev</button>
-            <div className="image-space">
-              <img className="image" src={badge2SelectorImageDisplay}></img>
-            </div>
-            <button onClick={nextBadge2}>Next</button>
-            <button onClick={saveBadge2}>Save</button>
+        <div>
+          <div>Select Avatar Badge (Slot2)</div>
+          <div>
+            <img class="builder_image" src={badge2SelectorImageDisplay}></img>
           </div>
+          <div>
+            <button class="builder_selector_button" onClick={prevBadge2}>Prev</button>
+            <button class="builder_selector_button" onClick={nextBadge2}>Next</button>
+          </div>
+          {/* <div>
+          <button class="builder_commit_button" onClick={saveBadge2}>Commit Badge 2</button>
+          </div> */}
         </div>
       );
     } else {
-      return <div className="content-container ">Loading Badges...</div>;
+      return <div>Loading Badges...</div>;
     }
   };
 
   //    * @param inputData [_featureHash, _remoteContractAddr, _remoteTokenId][]
   const saveAll = () => {
-    configureFeatures(
-      AVATAR_ADDRESS,
-      avatarTokenID, [
-        [headSlotHash, HEAD_ADDRESS, headSelectorKey],
-        [faceSlotHash, FACE_ADDRESS, faceSelectorKey],
-        [badge1SlotHash, BADGE_ADDRESS, badge1SelectorKey],
-        [badge2SlotHash, BADGE_ADDRESS, badge2SelectorKey],
-
-      ]
-
-    );
-};
+    configureFeatures(AVATAR_ADDRESS, avatarTokenID, [
+      [headSlotHash, HEAD_ADDRESS, headSelectorKey],
+      [faceSlotHash, FACE_ADDRESS, faceSelectorKey],
+      [badge1SlotHash, BADGE_ADDRESS, badge1SelectorKey],
+      [badge2SlotHash, BADGE_ADDRESS, badge2SelectorKey],
+    ]);
+  };
 
   return (
     <div className="App">
       <div className="content-container">{renderContent()}</div>
-      <div className="content-container">{headSelector()}</div>
-      <div className="content-container">{faceSelector()}</div>
-      <div className="content-container">{badge1Selector()}</div>
-      <div className="content-container">{badge2Selector()}</div>
-      <div className="content-container">
-        <button onClick={saveAll}>Save All</button>
-      </div>
     </div>
   );
 };

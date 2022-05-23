@@ -179,9 +179,8 @@ const Avatar = () => {
     } else {
       if (avatarTokenID != null) {
         return (
-          <div className="content-container ">
-            Avatar Card
-            <br />
+          <div class="transaction-flow__container">
+            <div class="transaction-flow__mode-types">Avatar Card</div>
             <div className="image-space-wrapper">
               <img className="image-space" src={avatarImageURI} />
             </div>
@@ -289,11 +288,7 @@ const Avatar = () => {
     }
   };
 
-  return (
-    <div className="App">
-      <div className="content-container">{renderContent()}</div>
-    </div>
-  );
+  return <div className="transaction-flow__wrapper">{renderContent()}</div>;
 };
 
 export default Avatar;

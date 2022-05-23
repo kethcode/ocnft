@@ -133,14 +133,13 @@ const Top = () => {
     } else {
       if (topTokenID != null) {
         return (
-          <div className="content-container ">
-            Top Card
-            <br />
-            <div className="image-space-wrapper">
-              <img className="image-space" src={topImageURI} />
+          <div className="transaction-flow__container">
+            <div class="transaction-flow__mode-types">Top Card</div>
+            <div class="image-space-wrapper">
+              <img src={topImageURI} />
             </div>
             <br />
-            <div className="content">
+            <div class="content">
               <p>
                 Top Token: {topTokenID != null ? topTokenID : "Not Found"}
                 <br />
@@ -198,11 +197,7 @@ const Top = () => {
     }
   };
 
-  return (
-    <div className="App">
-      <div className="content-container">{renderContent()}</div>
-    </div>
-  );
+  return <div className="transaction-flow__wrapper">{renderContent()}</div>;
 };
 
 export default Top;

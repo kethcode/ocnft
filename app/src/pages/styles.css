@@ -188,6 +188,7 @@
   box-shadow: 0px 0px 8px -4px rgba(20, 23, 26, 0.17),
     0px 4px 16px -1px rgba(20, 23, 26, 0.12);
 }
+
 .builder_image {
   background-color: var(--card);
   box-shadow: 0px 0px 8px -4px rgba(20, 23, 26, 0.1),
@@ -245,4 +246,28 @@
 
 .optimism-button__container {
 
+  }
+
+  .avatar_override__subcontainer {
+	margin: auto;
+	margin-top: 20px;
+	margin-bottom: 16px;
+	padding: 16px;
+	/* max-width: 400px; */
+	background-color: var(--card);
+	border-radius: 12px;
+	box-shadow: 0px 0px 8px -4px rgba(20, 23, 26, 0.17),
+	  0px 4px 16px -1px rgba(20, 23, 26, 0.12);
+  }
+
+  .native-transaction__input-container {
+	display: flex;
+	align-items: center;
+	background-color: var(--card);
+	border-radius: 12px;
+  }
+  
+  .input_style {
+	width: 50%;
+	margin: 8px;
   }

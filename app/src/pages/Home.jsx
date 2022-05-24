@@ -32,6 +32,14 @@ const Home = () => {
       } else {
         console.log("connected ethereum");
 
+        let chainId = await ethereum.request({ method: 'eth_chainId' });
+        console.log("chianId:", chainId);
+    
+        const rinkebyChainId = "0x4";
+        if(chainId !== rinkebyChainId) {
+          alert(`You are not on Rinkeby.`);
+        }    
+
         const accounts = await ethereum.request({ method: "eth_accounts" });
 
         if (accounts.length !== 0) {

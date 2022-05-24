@@ -89,6 +89,14 @@ const Builder = () => {
       } else {
         console.log("connected ethereum");
 
+        let chainId = await ethereum.request({ method: "eth_chainId" });
+        console.log("chianId:", chainId);
+
+        const rinkebyChainId = "0x4";
+        if (chainId !== rinkebyChainId) {
+          alert(`You are not on Rinkeby.`);
+        }
+
         const accounts = await ethereum.request({ method: "eth_accounts" });
 
         if (accounts.length !== 0) {
@@ -224,16 +232,18 @@ const Builder = () => {
     } else {
       return (
         <div>
-        <div class="transaction-flow__mode-types">Builder</div>
-        <div class="builder__container">
-          <div>
-            <button class="builder_commit_button" onClick={saveAll}>Commit All Changes</button>
+          <div class="transaction-flow__mode-types">Builder</div>
+          <div class="builder__container">
+            <div>
+              <button class="builder_commit_button" onClick={saveAll}>
+                Commit All Changes
+              </button>
+            </div>
+            <div class="builder__subcontainer">{headSelector()}</div>
+            <div class="builder__subcontainer">{faceSelector()}</div>
+            <div class="builder__subcontainer">{badge1Selector()}</div>
+            <div class="builder__subcontainer">{badge2Selector()}</div>
           </div>
-          <div class="builder__subcontainer">{headSelector()}</div>
-          <div class="builder__subcontainer">{faceSelector()}</div>
-          <div class="builder__subcontainer">{badge1Selector()}</div>
-          <div class="builder__subcontainer">{badge2Selector()}</div>
-        </div>
         </div>
       );
     }
@@ -310,8 +320,12 @@ const Builder = () => {
             <img class="builder_image" src={headSelectorImageDisplay}></img>
           </div>
           <div>
-            <button class="builder_selector_button" onClick={prevHead}>Prev</button>
-            <button class="builder_selector_button" onClick={nextHead}>Next</button>
+            <button class="builder_selector_button" onClick={prevHead}>
+              Prev
+            </button>
+            <button class="builder_selector_button" onClick={nextHead}>
+              Next
+            </button>
           </div>
           {/* <div>
           <button class="builder_commit_button" onClick={saveHead}>Commit Head</button>
@@ -393,8 +407,12 @@ const Builder = () => {
             <img class="builder_image" src={faceSelectorImageDisplay}></img>
           </div>
           <div>
-            <button class="builder_selector_button" onClick={prevFace}>Prev</button>
-            <button class="builder_selector_button" onClick={nextFace}>Next</button>
+            <button class="builder_selector_button" onClick={prevFace}>
+              Prev
+            </button>
+            <button class="builder_selector_button" onClick={nextFace}>
+              Next
+            </button>
           </div>
           {/* <div>
           <button class="builder_commit_button" onClick={saveFace}>Commit Face</button>
@@ -507,8 +525,12 @@ const Builder = () => {
             <img class="builder_image" src={badge1SelectorImageDisplay}></img>
           </div>
           <div>
-            <button class="builder_selector_button" onClick={prevBadge1}>Prev</button>
-            <button class="builder_selector_button" onClick={nextBadge1}>Next</button>
+            <button class="builder_selector_button" onClick={prevBadge1}>
+              Prev
+            </button>
+            <button class="builder_selector_button" onClick={nextBadge1}>
+              Next
+            </button>
           </div>
           {/* <div>
           <button class="builder_commit_button" onClick={saveBadge1}>Commit Badge 1</button>
@@ -621,8 +643,12 @@ const Builder = () => {
             <img class="builder_image" src={badge2SelectorImageDisplay}></img>
           </div>
           <div>
-            <button class="builder_selector_button" onClick={prevBadge2}>Prev</button>
-            <button class="builder_selector_button" onClick={nextBadge2}>Next</button>
+            <button class="builder_selector_button" onClick={prevBadge2}>
+              Prev
+            </button>
+            <button class="builder_selector_button" onClick={nextBadge2}>
+              Next
+            </button>
           </div>
           {/* <div>
           <button class="builder_commit_button" onClick={saveBadge2}>Commit Badge 2</button>
@@ -636,12 +662,12 @@ const Builder = () => {
 
   //    * @param inputData [_featureHash, _remoteContractAddr, _remoteTokenId][]
   const saveAll = () => {
-    configureFeatures(AVATAR_ADDRESS, avatarTokenID, [
-      [headSlotHash, HEAD_ADDRESS, headSelectorKey],
-      [faceSlotHash, FACE_ADDRESS, faceSelectorKey],
-      [badge1SlotHash, BADGE_ADDRESS, badge1SelectorKey],
-      [badge2SlotHash, BADGE_ADDRESS, badge2SelectorKey],
-    ]);
+      configureFeatures(AVATAR_ADDRESS, avatarTokenID, [
+        [headSlotHash, HEAD_ADDRESS, headSelectorKey],
+        [faceSlotHash, FACE_ADDRESS, faceSelectorKey],
+        [badge1SlotHash, BADGE_ADDRESS, badge1SelectorKey],
+        [badge2SlotHash, BADGE_ADDRESS, badge2SelectorKey],
+      ]);
   };
 
   return (

@@ -20,8 +20,10 @@ const configureFeatures = async (
       composable_tokenId,
       featureData
     );
+    return false;
   } catch (e) {
     console.log("configureFeatures:", e);
+    return false;
   }
 };
 

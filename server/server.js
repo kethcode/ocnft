@@ -4,7 +4,7 @@ const stream = require("stream");
 
 require("dotenv").config();
 const ethers = require("ethers");
-const provider_env = process.env.QUICKNODE_KEY_RINKEBY;
+const provider_env = process.env.ALCHEMY_KEY_RINKEBY;
 const wallet_env = process.env.PRIVATE_KEY_RINKEBY;
 const provider = new ethers.providers.JsonRpcProvider(provider_env);
 const wallet = new ethers.Wallet(wallet_env, provider);
@@ -22,14 +22,17 @@ const app = express();
 const port = 4200;
 
 const getFeatureUpdateHistory = async (contractAddress) => {
-  //console.log("getFeatureUpdateHistory(%s %d)", contractAddress, tokenId);
+  // console.log("getFeatureUpdateHistory(%s %d)", contractAddress);
   let lastUpdated = 10715427;
 
+  // console.log("let abiComposable");
   let abiComposable = JSON.parse(
     fs.readFileSync(path_abi_Composable, { flag: "r+" })
   );
 
+  // console.log("const provider");
   const provider = new ethers.providers.JsonRpcProvider(provider_env);
+  // console.log("const contract");
   const contract = new ethers.Contract(
     contractAddress,
     abiComposable["abi"],
@@ -39,20 +42,25 @@ const getFeatureUpdateHistory = async (contractAddress) => {
   // let blockNum = await provider.getBlockNumber();
   let blockOfLatestFeatureUpdate = 0;
 
-  filterFrom = contract.filters.FeatureConfigured();
-  let events = await contract.queryFilter(filterFrom, 10715427);
+  // console.log("const filterFrom");
+  let filterFrom = contract.filters.FeatureConfigured();
+  // console.log("const events");
+  let events = await contract.queryFilter(filterFrom, lastUpdated);
+  // console.log("events.forEach((element)");
+// console.log(events);  
   events.forEach((element) => {
+    // console.log(parseInt(element["blockNumber"]));
     if (parseInt(element["blockNumber"]) > blockOfLatestFeatureUpdate) {
       blockOfLatestFeatureUpdate = parseInt(element["blockNumber"]);
     }
   });
-  console.log("latest:", blockOfLatestFeatureUpdate);
+  // console.log("latest:", blockOfLatestFeatureUpdate);
   return blockOfLatestFeatureUpdate;
 };
 
 const needsRebuild = async (contractAddressString, tokenId) => {
-  let lastUpdated = 10715427;
-  let path_contract_folder = path_data + "/" + contractAddressString;
+  let lastUpdated = 0;
+  let path_contract_folder = path_data + "/" + contractAddressString.toLowerCase();
 
   // does this tokenId have an image yet?
   let path_token_image =
@@ -66,7 +74,7 @@ const needsRebuild = async (contractAddressString, tokenId) => {
 
   try {
     let token_image = fs.readFileSync(path_token_image, { flag: "r+" });
-    console.log("token %s image exists", path_token_image);
+    // console.log("token %s image exists", path_token_image);
 
     // it exists, so it should have metadata too
     try {
@@ -81,7 +89,7 @@ const needsRebuild = async (contractAddressString, tokenId) => {
       // console.log(lastUpdated);
 
       console.log(
-        "%d < %d ?",
+        "(updated) %d < %d (metadata) ?",
         JSON.parse(token_metadata)["lastUpdated"],
         lastUpdated
       );
@@ -91,7 +99,7 @@ const needsRebuild = async (contractAddressString, tokenId) => {
       if (JSON.parse(token_metadata)["lastUpdated"] < lastUpdated) {
         return true;
       }
-      console.log("token %s metadata exists", path_token_metadata);
+      // console.log("token %s metadata exists", path_token_metadata);
 
       // at this point, we think we are looking to use the cache.  however, we need to check
       // if any of the component nfts are also composable, and if they have updated since
@@ -133,7 +141,7 @@ const needsRebuild = async (contractAddressString, tokenId) => {
             );
 
             console.log(
-              "%d < %d ?",
+              "(updated) %d < %d (remote updated)?",
               JSON.parse(token_metadata)["lastUpdated"],
               featureUpdated
             );
@@ -150,14 +158,16 @@ const needsRebuild = async (contractAddressString, tokenId) => {
       return false;
 
     } catch (e) {
-      console.log("failed to read metadata:", e);
+      console.log("failed to read metadata");
       return true;
     }
   } catch (e) {
-    console.log("failed to read image:", e);
+    console.log("failed to read image");
     return true;
   }
 };
+
+console.log(`Optimism Composable NFT Image Server`);
 
 const cluster = require("cluster");
 const os = require("os");
@@ -176,7 +186,7 @@ if (cluster.isPrimary) {
   // we still store images and metadata in contract specific folders
   app.get("/:contractAddress/:tokenId", async (req, res) => {
     // extract contract address string
-    const contractAddressString = req.params.contractAddress;
+    const contractAddressString = req.params.contractAddress.toLowerCase();
 
     // validate it
     // is this a string
@@ -199,11 +209,15 @@ if (cluster.isPrimary) {
       return res.sendStatus(400);
     }
 
+    console.log(
+      `\n\rretrieving ${contractAddressString} \\ ${tokenId}`
+    );
+
     // does this contract have metadata yet?
     let path_contract_folder = path_data + "/" + contractAddressString;
     try {
       await fs.promises.access(path_contract_folder);
-      console.log("dir %s exists", path_contract_folder);
+      // console.log("dir %s exists", path_contract_folder);
     } catch {
       try {
         await fs.promises.mkdir(path_contract_folder);
@@ -211,7 +225,7 @@ if (cluster.isPrimary) {
         await fs.promises.mkdir(path_contract_folder + "/metadata");
         console.log("dir %s structure created", path_contract_folder);
       } catch (e) {
-        console.log(e);
+        console.log('failed to create new data folders');
       }
     }
 
@@ -227,7 +241,7 @@ if (cluster.isPrimary) {
     console.log("rebuild_image: ", rebuild_image);
     if (rebuild_image) {
       console.log(
-        `building token ${tokenId} for composable nft ${contractAddressString}`
+        `\n\rbuilding ${contractAddressString} \\ ${tokenId}`
       );
 
       let lastUpdated = await getFeatureUpdateHistory(
@@ -282,7 +296,7 @@ if (cluster.isPrimary) {
         }
       }
 
-      //console.log(featureListJSON);
+      // console.log(featureListJSON);
 
       // layer it up
       let canvas;
@@ -316,13 +330,14 @@ if (cluster.isPrimary) {
 
       // store the metadata on hard disk
       let token_metadata = {};
+      lastUpdated = await provider.getBlockNumber();
       token_metadata["lastUpdated"] = lastUpdated;
       fs.writeFileSync(path_token_metadata, JSON.stringify(token_metadata));
 
-      console.log(`token ${tokenId} updated.`);
+      console.log(`built ${contractAddressString} \\ ${tokenId}`);
     } else {
       console.log(
-        `retrieving token ${tokenId} for nft ${contractAddressString}`
+        `sending ${contractAddressString} \\ ${tokenId} from cache`
       );
     }
 
@@ -342,5 +357,5 @@ if (cluster.isPrimary) {
     ps.pipe(res); // <---- this makes a trick with stream error handling
   });
 
-  app.listen(port, () => console.log(`OCNFT ${pid} started`));
+  app.listen(port, () => console.log(`OCNFT Worker started at pid ${pid}`));
 }

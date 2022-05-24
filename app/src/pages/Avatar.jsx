@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import "./styles.css";
 
 import Composable from "../abi/Composable.json";
+import NFT_721E from "../abi/NFT_721E.json";
 
 import {
   AVATAR_ADDRESS,
@@ -17,8 +18,11 @@ import getTokenImage from "../components/getTokenImage";
 import getComposableFeatureData from "../components/getComposableFeatureData";
 
 const Avatar = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const [currentAccount, setCurrentAccount] = useState(null);
+
+  // const [addressInput, setAddressInput] = useState(AVATAR_ADDRESS);
+  // const [tokenIdInput, setTokenIdInput] = useState(0);
+  // const [overrideEnabled, setOverrideEnabled] = useState(false);
 
   const [avatarTokenID, setAvatarTokenID] = useState(null);
   const [avatarImageURI, setAvatarImageURI] = useState(null);
@@ -41,10 +45,17 @@ const Avatar = () => {
 
       if (!ethereum) {
         console.log("get metamask");
-        setIsLoading(false);
         return;
       } else {
         console.log("connected ethereum");
+
+        let chainId = await ethereum.request({ method: "eth_chainId" });
+        console.log("chianId:", chainId);
+
+        const rinkebyChainId = "0x4";
+        if (chainId !== rinkebyChainId) {
+          alert(`You are not on Rinkeby.`);
+        }
 
         const accounts = await ethereum.request({ method: "eth_accounts" });
 
@@ -59,7 +70,6 @@ const Avatar = () => {
     } catch (error) {
       console.log(error);
     }
-    setIsLoading(false);
   };
 
   const connectWalletAction = async () => {
@@ -83,7 +93,6 @@ const Avatar = () => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
     checkIfWalletIsConnected();
   }, []);
 
@@ -103,54 +112,55 @@ const Avatar = () => {
         getTokenImage(avatarTokenID, AVATAR_ADDRESS, Composable.abi).then(
           (imageURI) => {
             setAvatarImageURI(imageURI);
-            setIsLoading(false);
           }
         );
       } else {
-        getComposableFeatureData(avatarTokenID, AVATAR_ADDRESS, Composable.abi).then(
-          (featureListJSON) => {
-            console.log(featureListJSON);
+        getComposableFeatureData(
+          avatarTokenID,
+          AVATAR_ADDRESS,
+          Composable.abi
+        ).then((featureListJSON) => {
+          console.log(featureListJSON);
 
-            let badgeCount = 0;
+          let badgeCount = 0;
 
-            for (const key of Object.keys(featureListJSON)) {
-              if (
-                featureListJSON[key][1].toLowerCase() ===
-                BASE_ADDRESS.toLowerCase()
-              ) {
-                setBaseTokenID(featureListJSON[key][2]);
-                setBaseImageURI(featureListJSON[key][7]);
-              } else if (
-                featureListJSON[key][1].toLowerCase() ===
-                HEAD_ADDRESS.toLowerCase()
-              ) {
-                setHeadTokenID(featureListJSON[key][2]);
-                setHeadImageURI(featureListJSON[key][7]);
-              } else if (
-                featureListJSON[key][1].toLowerCase() ===
-                FACE_ADDRESS.toLowerCase()
-              ) {
-                setFaceTokenID(featureListJSON[key][2]);
-                setFaceImageURI(featureListJSON[key][7]);
-              } else if (
-                featureListJSON[key][1].toLowerCase() ===
-                BADGE_ADDRESS.toLowerCase()
-              ) {
-                switch (badgeCount) {
-                  case 0:
-                    setBadge1TokenID(featureListJSON[key][2]);
-                    setBadge1ImageURI(featureListJSON[key][7]);
-                    break;
-                  case 1:
-                    setBadge2TokenID(featureListJSON[key][2]);
-                    setBadge2ImageURI(featureListJSON[key][7]);
-                    break;
-                }
-                badgeCount++;
+          for (const key of Object.keys(featureListJSON)) {
+            if (
+              featureListJSON[key][1].toLowerCase() ===
+              BASE_ADDRESS.toLowerCase()
+            ) {
+              setBaseTokenID(featureListJSON[key][2]);
+              setBaseImageURI(featureListJSON[key][7]);
+            } else if (
+              featureListJSON[key][1].toLowerCase() ===
+              HEAD_ADDRESS.toLowerCase()
+            ) {
+              setHeadTokenID(featureListJSON[key][2]);
+              setHeadImageURI(featureListJSON[key][7]);
+            } else if (
+              featureListJSON[key][1].toLowerCase() ===
+              FACE_ADDRESS.toLowerCase()
+            ) {
+              setFaceTokenID(featureListJSON[key][2]);
+              setFaceImageURI(featureListJSON[key][7]);
+            } else if (
+              featureListJSON[key][1].toLowerCase() ===
+              BADGE_ADDRESS.toLowerCase()
+            ) {
+              switch (badgeCount) {
+                case 0:
+                  setBadge1TokenID(featureListJSON[key][2]);
+                  setBadge1ImageURI(featureListJSON[key][7]);
+                  break;
+                case 1:
+                  setBadge2TokenID(featureListJSON[key][2]);
+                  setBadge2ImageURI(featureListJSON[key][7]);
+                  break;
               }
+              badgeCount++;
             }
           }
-        );
+        });
       }
     }
   }, [
@@ -164,6 +174,7 @@ const Avatar = () => {
     badge2TokenID,
   ]);
 
+  // const addressChangeHandler = (e) => {
   const renderContent = () => {
     if (!currentAccount) {
       return (

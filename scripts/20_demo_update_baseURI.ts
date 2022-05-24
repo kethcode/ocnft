@@ -6,38 +6,40 @@ const path_ipfshash_data = "./data/ipfs_cids.json";
 const path_contract_addresses = "./data/contract_addresses.json";
 
 const ipfs_gateway = "https://kethic.mypinata.cloud/ipfs/";
-const hostBaseURI = "http://45.77.213.147:4200/";
-const externalURI = "https://localhost:4201/";
+const composeServerURI = "http://207.246.72.251:4200/";
+const externalURI = "https://207.246.72.251:3000/";
 
 async function main() {
   let contractData = JSON.parse(
     fs.readFileSync(path_contract_addresses, { flag: "r+" })
   );
 
-  const Host = await ethers.getContractFactory("host");
-  const Remote = await ethers.getContractFactory("remote");
+  const ComposableFactory = await ethers.getContractFactory("Composable");
+  const ERC721Factory = await ethers.getContractFactory("NFT_721E");
 
-  const host = Host.attach(contractData["hostAddress"]);
-  const remoteHead = Remote.attach(contractData["remoteHeadAddress"]);
-  const remoteFace = Remote.attach(contractData["remoteFaceAddress"]);
-  const remoteBadge = Remote.attach(contractData["remoteBadgeAddress"]);
-
-  let IpfsHash = JSON.parse(
-    fs.readFileSync(path_ipfshash_data, { flag: "r+" })
+  const top = ComposableFactory.attach(contractData["topAddress"]);
+  const avatar = ComposableFactory.attach(contractData["avatarAddress"]);
+  const remoteBackground = ERC721Factory.attach(
+    contractData["remoteBackgroundAddress"]
   );
-
-  let cid_head = IpfsHash["IpfsHash_head"];
-  let cid_face = IpfsHash["IpfsHash_face"];
-  let cid_badge = IpfsHash["IpfsHash_badge"];
+  const remoteBase = ERC721Factory.attach(contractData["remoteBaseAddress"]);
+  const remoteHead = ERC721Factory.attach(contractData["remoteHeadAddress"]);
+  const remoteFace = ERC721Factory.attach(contractData["remoteFaceAddress"]);
+  const remoteBadge = ERC721Factory.attach(contractData["remoteBadgeAddress"]);
 
   const accounts = await ethers.getSigners();
   let tx: any;
 
   // host URIs
-  console.log("host.setBaseURI:", hostBaseURI);
-  tx = await host.setBaseURI(hostBaseURI);
+  console.log("top.setBaseURI:", composeServerURI + contractData["topAddress"] + '/');
+  tx = await top.setBaseURI(composeServerURI + contractData["topAddress"] + '/');
   await tx.wait();
-  console.log("remoteBadge.setBaseURI:", hostBaseURI + " complete");
+  console.log("top.setBaseURI:", composeServerURI + contractData["topAddress"] + '/' + " complete");
+
+  console.log("avatar.setBaseURI:", composeServerURI + contractData["avatarAddress"] + '/');
+  tx = await avatar.setBaseURI(composeServerURI + contractData["avatarAddress"] + '/');
+  await tx.wait();
+  console.log("avatar.setBaseURI:", composeServerURI + contractData["avatarAddress"] + '/' + " complete");
 
   // // head URIs
   // tx = await remoteHead.setBaseURI(ipfs_gateway + cid_head + "/");

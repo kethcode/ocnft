@@ -11,8 +11,8 @@ const path_contract_addresses = path.resolve(
 );
 
 const ipfs_gateway = "https://kethic.mypinata.cloud/ipfs/";
-const composeServerURI = "http://45.77.213.147:4200/";
-const externalURI = "https://localhost:4201/";
+const composeServerURI = "http://207.246.72.251:4200/";
+const externalURI = "https://207.246.72.251:3000/";
 
 const hashfn = (element: string) => {
   return Buffer.from(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(element)).slice(2), 'hex') as Bytes

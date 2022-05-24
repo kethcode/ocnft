@@ -15,8 +15,8 @@ const path_contract_addresses = path.resolve(
 );
 
 const ipfs_gateway = "https://kethic.mypinata.cloud/ipfs/";
-const hostBaseURI = "http://45.77.213.147:4200/";
-const externalURI = "https://localhost:4201/";
+const composeServerURI = "http://207.246.72.251:4200/";
+const externalURI = "https://207.246.72.251:3000/";
 
 const path_ipfshash_data = path.resolve(__dirname, `../data/ipfs_cids.json`);
 const path_ipfshash_images_badge = path.resolve(__dirname, `../ipfs/badge/`);
